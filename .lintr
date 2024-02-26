@@ -1,0 +1,3 @@
+linters: linters_with_defaults(
+    indentation_linter = indentation_linter(4, "tidy"),
+    object_usage_linter = NULL)
