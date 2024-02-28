@@ -50,8 +50,20 @@ symbolize_forecast <- function(fc, sym) {
     return(c(sym, fc_symbolic))
 }
 
-ggsymbolic_forecast <- function(sym, fc) {
-    x <- seq(1, length(sym))
+ggsymbolic_forecast <- function(sym, fc, time) {
+    sym <- symbolize_forecast(fc, sym)
+
+    x <- NULL
+    ribbon_x <- NULL
+
+    if (is.null(time)) {
+        x <- seq_len(length(sym))
+        ribbon_x <- seq(length(sym) - nrow(fc) + 1, length.out = nrow(fc))
+    } else {
+        x <- c(time, as.POSIXct(fc$Time))
+        ribbon_x <- as.POSIXct(fc$Time)
+    }
+
     y <- attr(sym, "values")
 
     bp <- attr(sym, "bp")
@@ -61,7 +73,7 @@ ggsymbolic_forecast <- function(sym, fc) {
         geom_line(aes(x, y)) +
         geom_ribbon(
             aes(
-                x = fc$Time,
+                x = ribbon_x,
                 y = fc$Prediction,
                 ymin = fc$Minimum,
                 ymax = fc$Maximum

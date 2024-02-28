@@ -108,8 +108,15 @@ symbolize <- function(x, n, alphabet = letters, method = "qsax") {
     as_symbolic(symbols, bp, x)
 }
 
-ggsymbolic <- function(sym) {
-    x <- seq(1, length(sym))
+ggsymbolic <- function(sym, time) {
+    x <- NULL
+
+    if (is.null(time)) {
+        x <- seq(1, length(sym))
+    } else {
+        x <- time
+    }
+
     y <- attr(sym, "values")
 
     bp <- attr(sym, "bp")

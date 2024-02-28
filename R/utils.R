@@ -37,7 +37,7 @@ mean_datetime <- function(dates) {
     mean(as.numeric(as_datetime(dates)), na.rm = TRUE) |> as_datetime()
 }
 
-dr_date <- function(dates, cr, ignore_remaining = TRUE) {
+paa_date <- function(dates, cr, ignore_remaining = TRUE) {
     res_size <- NA
     if (ignore_remaining) {
         res_size <- floor(length(dates) / cr)
@@ -51,4 +51,8 @@ dr_date <- function(dates, cr, ignore_remaining = TRUE) {
     }
 
     as_datetime(res)
+}
+
+make_fake_time <- function(n, initial = as.Date("1000-01-01"), by = "day") {
+    seq.Date(initial, by = by, length.out = n)
 }
