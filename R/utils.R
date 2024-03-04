@@ -37,6 +37,7 @@ mean_datetime <- function(dates) {
     mean(as.numeric(as_datetime(dates)), na.rm = TRUE) |> as_datetime()
 }
 
+# Polymorph this function.
 paa_date <- function(dates, cr, ignore_remaining = TRUE) {
     res_size <- NA
     if (ignore_remaining) {
@@ -55,4 +56,8 @@ paa_date <- function(dates, cr, ignore_remaining = TRUE) {
 
 make_fake_time <- function(n, initial = as.Date("1000-01-01"), by = "day") {
     seq.Date(initial, by = by, length.out = n)
+}
+
+internal_bp <- function(bp) {
+    bp[seq(2, length(bp) - 1)]
 }

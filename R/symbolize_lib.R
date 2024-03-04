@@ -33,7 +33,7 @@ paa <- function(x, by, ignore_remaining = TRUE) {
     res
 }
 
-discretize <- function(x, bp, alphabet) {
+discretize <- function(x, bp, alphabet = letters) {
     y <- rep(NA, length(x))
 
     for (i in seq(1, length(bp) - 1)) {

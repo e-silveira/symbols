@@ -25,7 +25,7 @@ symbolic_options_server <- function(id) {
         reactive({
             list(
                 alphabet_size = input$alphabet_size,
-                compression_rate = input$compression_rate,
+                crate = input$compression_rate,
                 method = input$method
             )
         })
