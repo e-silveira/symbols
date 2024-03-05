@@ -4,7 +4,7 @@ library(ggplot2)
 library(dplyr)
 library(lubridate)
 library(stringr)
-source("R/symbolize.R")
+source("lib/symbolize.R")
 
 # Retorna um data.frame com os atributos Time, Prediction, Minimum e Maximum.
 forecast <- function(df, periods, seasonality, mode) {
