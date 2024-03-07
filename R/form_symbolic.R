@@ -1,7 +1,7 @@
 library(shiny)
 library(stringr)
 
-symbolic_options_ui <- function(id) {
+ui_symbolic <- function(id) {
     tagList(
         numericInput(
             inputId = NS(id, "alpha"),
@@ -40,7 +40,7 @@ symbolic_options_ui <- function(id) {
     )
 }
 
-symbolic_options_server <- function(id) {
+server_symbolic <- function(id) {
     moduleServer(id, function(input, output, session) {
         reactive({
             list(

@@ -5,7 +5,7 @@ ui <- fluidPage(
         title = "Symbols!",
         tabPanel(
             title = "Discretize",
-            discretize_ui("discretize")
+            ui_discretize("discretize")
         ),
         tabPanel(
             title = "Classify",
@@ -14,7 +14,7 @@ ui <- fluidPage(
 )
 
 server <- function(input, output, session) {
-    discretize_server("discretize")
+    server_discretize("discretize")
 }
 
 shinyApp(ui, server)

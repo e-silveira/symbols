@@ -41,13 +41,13 @@ forecast <- function(df, periods, seasonality, mode) {
             Minimum = yhat_lower,
             Maximum = yhat_upper
         ) |>
-        mutate(Time = as.Date(Time))
+        mutate(Time = as_date(Time))
 }
 
 forecast_vector <- function(x, periods, seasonality, mode) {
     data.frame(
         ds = seq.Date(
-            as.Date("1000-01-01"),
+            as_date("1000-01-01"),
             by = "day",
             length.out = length(x)
         ),

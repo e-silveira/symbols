@@ -1,28 +1,51 @@
 library(dplyr)
 library(lubridate)
 
-make_coercible <- function(coerce) {
-    function(x) {
-        tryCatch(
-            {
-                coerce(x)
-                TRUE
-            },
-            condition = function(cond) FALSE
-        )
-    }
+date_formats <- list(
+    "ymd",
+    "dmy",
+    "ymd HMS",
+    "dmy HMS"
+)
+
+numeric_coercible <- function(x) {
+    tryCatch(
+        {
+            as.numeric(x)
+            TRUE
+        },
+        condition = function(cond) FALSE
+    )
 }
 
-date_coercible <- make_coercible(as.Date)
-numeric_coercible <- make_coercible(as.numeric)
+date_coercible <- function(dates) {
+    tryCatch(
+        {
+            parse_date_time(dates, date_formats)
+            TRUE
+        },
+        condition = function(cond) FALSE
+    )
+}
 
 get_numeric_colnames <- function(data) {
-    select(data, where(numeric_coercible)) |> colnames()
+    select(
+        data,
+        where(function(column) {
+            numeric_coercible(column) && !all(is.na(column))
+        })
+    ) |> colnames()
 }
 
 get_date_colnames <- function(data) {
-    select(data, where(date_coercible)) |> colnames()
+    select(
+        data,
+        where(function(column) {
+            date_coercible(column) && !all(is.na(column))
+        })
+    ) |> colnames()
 }
+
 
 try_subset <- function(data, colname) {
     tryCatch(
