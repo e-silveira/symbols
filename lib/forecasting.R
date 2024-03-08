@@ -62,8 +62,8 @@ forecast_vector <- function(x, periods, seasonality, mode) {
         )
 }
 
-symbolize_forecast <- function(fc, sym) {
-    fc_sym <- discretize(fc$Prediction, attr(sym, "bp"), letters)
+symbolize_forecast <- function(fc, sym, alphabet) {
+    fc_sym <- discretize(fc$Prediction, attr(sym, "bp"), alphabet)
 
     fc_symbolic <- as_symbolic(fc_sym, NULL, fc$Prediction)
 

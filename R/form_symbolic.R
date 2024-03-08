@@ -1,5 +1,8 @@
 library(shiny)
+library(shinyhelper)
 library(stringr)
+library(purrr)
+library(magrittr)
 
 ui_symbolic <- function(id) {
     tagList(
@@ -7,46 +10,71 @@ ui_symbolic <- function(id) {
             inputId = NS(id, "alpha"),
             label = "How many classes?",
             value = 4,
-            min = 1,
-            max = 26,
+        ) |> helper(
+            icon = "circle-question",
+            colour = "black",
+            type = "markdown",
+            content = "form_symbolic_alpha"
         ),
-        helpText(paste(
-            "By default, classes will be named",
-            "after the letters of the alphabet.",
-            "However, you may also provide custom class names.",
-            "In such cases, the number of classes",
-            "will correspond to the number of names you provide."
-        )),
         numericInput(
             inputId = NS(id, "compr"),
             label = "What group size?",
             value = 1,
+        ) |> helper(
+            icon = "circle-question",
+            colour = "black",
+            type = "markdown",
+            content = "form_symbolic_compr"
         ),
-        helpText(paste(
-            "The group size represents the quantity of observations",
-            "you wish to aggregate through averaging."
-        )),
         selectInput(
             inputId = NS(id, "method"),
             label = "What method?",
             choices = c("SAX", "dwSAX", "qSAX"),
+        ) |> helper(
+            icon = "circle-question",
+            colour = "black",
+            type = "markdown",
+            content = "form_symbolic_method"
         ),
-        helpText(paste(
-            "The SAX method calculates breakpoints",
-            "assuming the normality of the data,",
-            "while the dwSAX and qSAX methods determine breakpoints",
-            "based on the distribution of the data."
-        ))
+        textInput(
+            inputId = NS(id, "classes"),
+            label = "What class names?"
+        ) |> helper(
+            icon = "circle-question",
+            colour = "black",
+            type = "markdown",
+            content = "form_symbolic_classes"
+        ),
     )
 }
 
 server_symbolic <- function(id) {
     moduleServer(id, function(input, output, session) {
+        class_names <- reactive({
+            if (isTruthy(input$classes)) {
+                str_split_1(input$classes, ",") |>
+                    reduce(function(acc, x) if (x == "") acc else c(acc, x)) |>
+                    map_chr(str_trim)
+            } else {
+                NULL
+            }
+        })
+
+        observeEvent(class_names(), {
+            if (length(class_names()) > 0) {
+                updateNumericInput(
+                    inputId = "alpha",
+                    value = length(class_names())
+                )
+            }
+        })
+
         reactive({
             list(
                 alpha = input$alpha,
                 compr = input$compr,
-                method = str_to_lower(input$method)
+                method = str_to_lower(input$method),
+                classes = class_names()
             )
         })
     })

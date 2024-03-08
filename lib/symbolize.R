@@ -61,7 +61,7 @@ breakpoints_qsax <- function(x, n) {
 }
 
 breakpoints_dwsax <- function(x, n) {
-    den <- density(x)
+    den <- density(x, na.rm = TRUE)
     dx <- den$x[2] - den$x[1]
 
     pdf <- list(x = den$x, y = cumsum(den$y * dx))

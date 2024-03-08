@@ -73,9 +73,15 @@ server_discretize <- function(id) {
         })
 
         df_forecasting <- reactive({
+            alphabet <- letters
+            if (!is.null(opt_symbolic()$classes)) {
+                alphabet <- opt_symbolic()$classes
+            }
+
             apply_forecast(
                 df_symbolic(),
-                opt_forecasting()
+                opt_forecasting(),
+                alphabet
             )
         })
 
@@ -192,16 +198,22 @@ apply_paa <- function(df, symb) {
 apply_symbolize <- function(df, symb) {
     c(time_name, attr_name) %<-% colnames(df)
 
+    alphabet <- letters
+    if (!is.null(symb$classes)) {
+        alphabet <- symb$classes
+    }
+
     symbolized <- symbolize(
         df[[attr_name]],
         symb$alpha,
+        alphabet = alphabet,
         method = symb$method
     )
 
     cbind(df, Symbols = symbolized)
 }
 
-apply_forecast <- function(symb, forecasting) {
+apply_forecast <- function(symb, forecasting, alphabet) {
     if (!forecasting$apply) {
         return(symb)
     }
@@ -230,7 +242,8 @@ apply_forecast <- function(symb, forecasting) {
 
     symbols <- discretize(
         df_forecasting$Prediction,
-        attr(symb[["Symbols"]], "bp")
+        attr(symb[["Symbols"]], "bp"),
+        alphabet = alphabet
     )
 
     cbind(df_forecasting, Symbols = symbols)
