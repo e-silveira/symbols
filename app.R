@@ -1,11 +1,12 @@
 library(shiny)
+library(shinyhelper)
 
 ui <- fluidPage(
     navbarPage(
         title = "Symbols!",
         tabPanel(
             title = "Discretize",
-            ui_discretize("discretize")
+            ui_discretize("discretize"),
         ),
         tabPanel(
             title = "Classify",
@@ -14,6 +15,7 @@ ui <- fluidPage(
 )
 
 server <- function(input, output, session) {
+    observe_helpers(help_dir = "help")
     server_discretize("discretize")
 }
 
