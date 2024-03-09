@@ -1,32 +1,53 @@
 library(shiny)
+library(shinyhelper)
 library(lubridate)
 
 ui_input <- function(id) {
     tagList(
         fileInput(
             inputId = NS(id, "file"),
-            label = "Upload your data.",
+            label = "What data file?",
             accept = ".csv",
             placeholder = "dengue.csv"
+        ) |> helper(
+            icon = "circle-question",
+            colour = "black",
+            type = "markdown",
+            content = "form_input_file"
         ),
         selectInput(
             inputId = NS(id, "attr"),
             label = "What column to discretize?",
             choices = NULL,
             selectize = FALSE,
+        ) |> helper(
+            icon = "circle-question",
+            colour = "black",
+            type = "markdown",
+            content = "form_input_attr"
         ),
         selectInput(
             inputId = NS(id, "time"),
             label = "What time column?",
             choices = NULL,
             selectize = FALSE,
+        ) |> helper(
+            icon = "circle-question",
+            colour = "black",
+            type = "markdown",
+            content = "form_input_time"
         ),
         selectInput(
             inputId = NS(id, "date_format"),
             label = "What date format?",
             choices = date_formats,
             selectize = FALSE,
-        )
+        ) |> helper(
+            icon = "circle-question",
+            colour = "black",
+            type = "markdown",
+            content = "form_input_date_format"
+        ),
     )
 }
 

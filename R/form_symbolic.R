@@ -16,6 +16,15 @@ ui_symbolic <- function(id) {
             type = "markdown",
             content = "form_symbolic_alpha"
         ),
+        textInput(
+            inputId = NS(id, "classes"),
+            label = "What class names?"
+        ) |> helper(
+            icon = "circle-question",
+            colour = "black",
+            type = "markdown",
+            content = "form_symbolic_classes"
+        ),
         numericInput(
             inputId = NS(id, "compr"),
             label = "What group size?",
@@ -35,15 +44,6 @@ ui_symbolic <- function(id) {
             colour = "black",
             type = "markdown",
             content = "form_symbolic_method"
-        ),
-        textInput(
-            inputId = NS(id, "classes"),
-            label = "What class names?"
-        ) |> helper(
-            icon = "circle-question",
-            colour = "black",
-            type = "markdown",
-            content = "form_symbolic_classes"
         ),
     )
 }
