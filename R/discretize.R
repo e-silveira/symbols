@@ -91,7 +91,8 @@ server_discretize <- function(id) {
             },
             options = list(
                 pageLength = 10,
-                searching = FALSE
+                searching = FALSE,
+                scrollX = TRUE
             )
         ) |> bindEvent(input$apply)
 

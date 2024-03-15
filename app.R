@@ -10,6 +10,7 @@ ui <- fluidPage(
         ),
         tabPanel(
             title = "Classify",
+            ui_classify("classify"),
         )
     )
 )
@@ -17,6 +18,7 @@ ui <- fluidPage(
 server <- function(input, output, session) {
     observe_helpers(help_dir = "help")
     server_discretize("discretize")
+    server_classify("classify")
 }
 
 shinyApp(ui, server)
