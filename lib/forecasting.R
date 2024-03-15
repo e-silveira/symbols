@@ -8,6 +8,9 @@ source("lib/symbolize.R")
 
 # Retorna um data.frame com os atributos Time, Prediction, Minimum e Maximum.
 forecast <- function(df, periods, seasonality, mode) {
+
+    df <- arrange(df, ds)
+
     model <- prophet(
         df,
         daily.seasonality = "Daily" %in% seasonality,
@@ -16,22 +19,16 @@ forecast <- function(df, periods, seasonality, mode) {
         seasonality.mode = str_to_lower(mode)
     )
 
-    diff <- abs(as.numeric(df[["ds"]][2] - df[["ds"]][1]))
+    ds <- df[["ds"]]
 
-    freq <- "day"
-    if (diff == 7) {
-        freq <- "week"
-    } else if (abs(diff - 30) < 4) {
-        freq <- "month"
-    } else if (abs(diff - 365) < 2) {
-        freq <- "year"
-    }
+    diff <- ds[2] - ds[1]
 
-    future <- make_future_dataframe(
-        model,
-        periods = periods,
-        include_history = FALSE,
-        freq = freq
+    future <- data.frame(
+        ds = seq(
+            ds[length(ds)] + diff,
+            by = diff,
+            length.out = periods
+        )
     )
 
     predict(model, future) |>
