@@ -23,6 +23,12 @@ ui_classify <- function(id) {
                         outputId = NS(id, "table")
                     )
                 ),
+                tabPanel(
+                    title = "Tree",
+                    plotOutput(
+                        outputId = NS(id, "tree")
+                    )
+                ),
                 header = br()
             )
         )
@@ -32,6 +38,7 @@ ui_classify <- function(id) {
 server_classify <- function(id) {
     moduleServer(id, function(input, output, session) {
         data <- server_classify_data("data")
+        tree <- server_classify_tree("tree", data)
 
         output$table <- renderDataTable(
             {
@@ -42,6 +49,10 @@ server_classify <- function(id) {
                 searching = FALSE,
                 scrollX = TRUE
             )
+        ) |> bindEvent(input$apply)
+
+        output$tree <- renderPlot(
+            tree()
         ) |> bindEvent(input$apply)
     })
 }

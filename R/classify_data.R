@@ -57,7 +57,7 @@ server_classify_data <- function(id) {
         })
 
         reactive({
-            select(data(), all_of(input$features))
+            select(data(), all_of(c(input$target, input$features)))
         })
     })
 }
