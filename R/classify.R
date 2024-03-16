@@ -8,6 +8,10 @@ ui_classify <- function(id) {
                     title = "Data",
                     ui_classify_data(NS(id, "data")),
                 ),
+                tabPanel(
+                    title = "Tree",
+                    ui_classify_tree(NS(id, "tree"))
+                ),
                 header = br(),
             ),
             actionButton(
@@ -19,12 +23,14 @@ ui_classify <- function(id) {
             tabsetPanel(
                 tabPanel(
                     title = "Data",
+                    icon = icon("table"),
                     dataTableOutput(
                         outputId = NS(id, "table")
                     )
                 ),
                 tabPanel(
                     title = "Tree",
+                    icon = icon("tree"),
                     plotOutput(
                         outputId = NS(id, "tree")
                     )
