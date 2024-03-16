@@ -3,6 +3,13 @@ library(rpart)
 library(rpart.plot)
 
 ui_classify_tree <- function(id) {
+    tagList(
+        selectInput(
+            inputId = NS(id, "method"),
+            label = "What method?",
+            choices = c("guess", "anova", "poisson", "class", "exp")
+        )
+    )
 }
 
 server_classify_tree <- function(id, data) {

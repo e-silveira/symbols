@@ -33,12 +33,14 @@ ui_discretize_output <- function(id) {
         tabsetPanel(
             tabPanel(
                 title = "Data",
+                icon = icon("table"),
                 dataTableOutput(
                     outputId = NS(id, "table")
                 ),
             ),
             tabPanel(
                 title = "Plot",
+                icon = icon("chart-line"),
                 plotOutput(
                     outputId = NS(id, "plot")
                 ),

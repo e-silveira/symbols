@@ -6,10 +6,12 @@ ui <- fluidPage(
         title = "Symbols!",
         tabPanel(
             title = "Discretize",
+            icon = icon("wave-square"),
             ui_discretize("discretize"),
         ),
         tabPanel(
             title = "Classify",
+            icon = icon("folder-tree"),
             ui_classify("classify"),
         )
     )
