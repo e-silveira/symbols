@@ -2,7 +2,7 @@ helper_ <- function(shiny_tag,
                     content,
                     icon = "circle-info",
                     type = "markdown",
-                    colour = "gray",
+                    colour = "#6B6B6B",
                     ...) {
     helper(
         shiny_tag,

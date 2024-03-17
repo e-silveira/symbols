@@ -1,22 +1,28 @@
 library(shiny)
 library(dplyr)
 library(zeallot)
+library(bslib)
+library(bsicons)
+library(DT)
 source("lib/forecasting.R")
 source("lib/symbolize.R")
 
 ui_discretize_input <- function(id) {
-    tagList(
-        tabsetPanel(
-            tabPanel(
-                title = "Input",
+    list(
+        accordion(
+            accordion_panel(
+                title = "Data",
+                icon = bs_icon("filetype-csv"),
                 ui_input(NS(id, "input")),
             ),
-            tabPanel(
+            accordion_panel(
                 title = "Symbolic",
+                icon = bs_icon("sort-alpha-up-alt"),
                 ui_symbolic(NS(id, "symbolic")),
             ),
-            tabPanel(
+            accordion_panel(
                 title = "Forecasting",
+                icon = bs_icon("magic"),
                 ui_forecasting(NS(id, "forecasting")),
             ),
             header = br(),
@@ -29,18 +35,18 @@ ui_discretize_input <- function(id) {
 }
 
 ui_discretize_output <- function(id) {
-    tagList(
-        tabsetPanel(
-            tabPanel(
-                title = "Data",
-                icon = icon("table"),
-                dataTableOutput(
+    list(
+        navset_underline(
+            nav_panel(
+                title = "Table",
+                icon = bs_icon("table"),
+                DT::dataTableOutput(
                     outputId = NS(id, "table")
                 ),
             ),
-            tabPanel(
+            nav_panel(
                 title = "Plot",
-                icon = icon("chart-line"),
+                icon = bs_icon("graph-up"),
                 plotOutput(
                     outputId = NS(id, "plot")
                 ),
@@ -51,14 +57,12 @@ ui_discretize_output <- function(id) {
 }
 
 ui_discretize <- function(id) {
-    sidebarLayout(
-        sidebarPanel(
-            helpText("Apply symbolization/discretization to a column."),
-            ui_discretize_input(id),
+    layout_sidebar(
+        sidebar = sidebar(
+            width = "33%",
+            !!!ui_discretize_input(id),
         ),
-        mainPanel(
-            ui_discretize_output(id),
-        ),
+        !!!ui_discretize_output(id),
     )
 }
 
@@ -87,7 +91,7 @@ server_discretize <- function(id) {
             )
         })
 
-        output$table <- renderDataTable(
+        output$table <- DT::renderDataTable(
             {
                 df_symbolic()
             },
