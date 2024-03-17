@@ -1,15 +1,20 @@
 library(shiny)
+library(bslib)
+library(DT)
 
 ui_classify <- function(id) {
-    sidebarLayout(
-        sidebarPanel(
-            tabsetPanel(
-                tabPanel(
+    layout_sidebar(
+        sidebar = sidebar(
+            width = "33%",
+            accordion(
+                accordion_panel(
                     title = "Data",
+                    icon = bs_icon("filetype-csv"),
                     ui_classify_data(NS(id, "data")),
                 ),
-                tabPanel(
+                accordion_panel(
                     title = "Tree",
+                    icon = bs_icon("diagram-3"),
                     ui_classify_tree(NS(id, "tree"))
                 ),
                 header = br(),
@@ -17,27 +22,25 @@ ui_classify <- function(id) {
             actionButton(
                 inputId = NS(id, "apply"),
                 label = "Apply",
-                icon = icon("circle-chevron-right")
+                # icon = bs_icon("arrow-right-square")
             )
         ),
-        mainPanel(
-            tabsetPanel(
-                tabPanel(
-                    title = "Data",
-                    icon = icon("table"),
-                    dataTableOutput(
-                        outputId = NS(id, "table")
-                    )
-                ),
-                tabPanel(
-                    title = "Tree",
-                    icon = icon("tree"),
-                    plotOutput(
-                        outputId = NS(id, "tree")
-                    )
-                ),
-                header = br()
-            )
+        navset_underline(
+            nav_panel(
+                title = "Table",
+                icon = bs_icon("table"),
+                DT::dataTableOutput(
+                    outputId = NS(id, "table")
+                )
+            ),
+            nav_panel(
+                title = "Tree",
+                icon = bs_icon("diagram-3"),
+                plotOutput(
+                    outputId = NS(id, "tree")
+                )
+            ),
+            header = br()
         )
     )
 }
@@ -47,7 +50,7 @@ server_classify <- function(id) {
         data <- server_classify_data("data")
         tree <- server_classify_tree("tree", data)
 
-        output$table <- renderDataTable(
+        output$table <- DT::renderDataTable(
             {
                 data()
             },

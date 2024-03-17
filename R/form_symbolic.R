@@ -8,21 +8,21 @@ ui_symbolic <- function(id) {
     tagList(
         numericInput(
             inputId = NS(id, "alpha"),
-            label = "How many classes?",
+            label = "Select the number of classes:",
             value = 4,
         ) |> helper_("form_symbolic_alpha"),
         textInput(
             inputId = NS(id, "classes"),
-            label = "What class names?"
+            label = "Specify the class names:"
         ) |> helper_("form_symbolic_classes"),
         numericInput(
             inputId = NS(id, "compr"),
-            label = "What group size?",
+            label = "Specify the group size:",
             value = 1,
         ) |> helper_("form_symbolic_compr"),
         selectInput(
             inputId = NS(id, "method"),
-            label = "What method?",
+            label = "Select the method:",
             choices = c("SAX", "dwSAX", "qSAX"),
         ) |> helper_("form_symbolic_method"),
     )

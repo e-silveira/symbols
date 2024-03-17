@@ -1,17 +1,23 @@
 library(shiny)
 library(shinyhelper)
+library(bslib)
 
-ui <- fluidPage(
-    navbarPage(
+ui <- page_fluid(
+    theme = bs_theme(
+        primary = "#757575",
+        secondary = "#6B6B6B",
+        preset = "bootstrap"
+    ),
+    page_navbar(
         title = "Symbols!",
         tabPanel(
             title = "Discretize",
-            icon = icon("wave-square"),
+            icon = bs_icon("bricks"),
             ui_discretize("discretize"),
         ),
         tabPanel(
             title = "Classify",
-            icon = icon("folder-tree"),
+            icon = bs_icon("boxes"),
             ui_classify("classify"),
         )
     )
