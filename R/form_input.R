@@ -6,48 +6,28 @@ ui_input <- function(id) {
     tagList(
         fileInput(
             inputId = NS(id, "file"),
-            label = "What data file?",
+            label = "Select a data file:",
             accept = ".csv",
             placeholder = "dengue.csv"
-        ) |> helper(
-            icon = "circle-question",
-            colour = "black",
-            type = "markdown",
-            content = "form_input_file"
-        ),
+        ) |> helper_("form_input_file"),
         selectInput(
             inputId = NS(id, "attr"),
-            label = "What column to discretize?",
+            label = "Select the column to discretize:",
             choices = NULL,
             selectize = FALSE,
-        ) |> helper(
-            icon = "circle-question",
-            colour = "black",
-            type = "markdown",
-            content = "form_input_attr"
-        ),
+        ) |> helper_("form_input_attr"),
         selectInput(
             inputId = NS(id, "time"),
-            label = "What time column?",
+            label = "Select the time column:",
             choices = NULL,
             selectize = FALSE,
-        ) |> helper(
-            icon = "circle-question",
-            colour = "black",
-            type = "markdown",
-            content = "form_input_time"
-        ),
+        ) |> helper_("form_input_time"),
         selectInput(
             inputId = NS(id, "date_format"),
-            label = "What date format?",
+            label = "Select the date format:",
             choices = date_formats,
             selectize = FALSE,
-        ) |> helper(
-            icon = "circle-question",
-            colour = "black",
-            type = "markdown",
-            content = "form_input_date_format"
-        ),
+        ) |> helper_("form_input_date_format"),
     )
 }
 
