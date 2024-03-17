@@ -10,41 +10,21 @@ ui_symbolic <- function(id) {
             inputId = NS(id, "alpha"),
             label = "How many classes?",
             value = 4,
-        ) |> helper(
-            icon = "circle-question",
-            colour = "black",
-            type = "markdown",
-            content = "form_symbolic_alpha"
-        ),
+        ) |> helper_("form_symbolic_alpha"),
         textInput(
             inputId = NS(id, "classes"),
             label = "What class names?"
-        ) |> helper(
-            icon = "circle-question",
-            colour = "black",
-            type = "markdown",
-            content = "form_symbolic_classes"
-        ),
+        ) |> helper_("form_symbolic_classes"),
         numericInput(
             inputId = NS(id, "compr"),
             label = "What group size?",
             value = 1,
-        ) |> helper(
-            icon = "circle-question",
-            colour = "black",
-            type = "markdown",
-            content = "form_symbolic_compr"
-        ),
+        ) |> helper_("form_symbolic_compr"),
         selectInput(
             inputId = NS(id, "method"),
             label = "What method?",
             choices = c("SAX", "dwSAX", "qSAX"),
-        ) |> helper(
-            icon = "circle-question",
-            colour = "black",
-            type = "markdown",
-            content = "form_symbolic_method"
-        ),
+        ) |> helper_("form_symbolic_method"),
     )
 }
 
