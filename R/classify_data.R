@@ -5,18 +5,18 @@ ui_classify_data <- function(id) {
     tagList(
         fileInput(
             inputId = NS(id, "file"),
-            label = "What data file?",
+            label = "Upload the data file:",
             accept = ".csv",
             placeholder = "dengue.csv"
         ),
         selectInput(
             inputId = NS(id, "target"),
-            label = "What target?",
+            label = "Select the target attribute:",
             choices = NULL,
         ),
         selectInput(
             inputId = NS(id, "features"),
-            label = "What features?",
+            label = "Select the features:",
             choices = NULL,
             multiple = TRUE
         )

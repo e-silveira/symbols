@@ -16,7 +16,8 @@ ui_classify <- function(id) {
             ),
             actionButton(
                 inputId = NS(id, "apply"),
-                label = "Apply"
+                label = "Apply",
+                icon = icon("circle-chevron-right")
             )
         ),
         mainPanel(
