@@ -9,10 +9,6 @@ ui_classify_tree <- function(id) {
             label = "Select the splitting method:",
             choices = c("guess", "anova", "poisson", "class", "exp")
         ),
-        checkboxInput(
-            inputId = "na_action",
-            label = "Delete missing observations."
-        ),
         numericInput(
             inputId = "minsplit",
             label = "Specify the minimum split size:",
