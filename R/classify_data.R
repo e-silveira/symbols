@@ -1,5 +1,6 @@
 library(shiny)
 library(dplyr)
+library(bslib)
 
 ui_classify_data <- function(id) {
     tagList(
@@ -14,11 +15,12 @@ ui_classify_data <- function(id) {
             label = "Select the target attribute:",
             choices = NULL,
         ),
-        selectInput(
+        selectizeInput(
             inputId = NS(id, "features"),
             label = "Select the features:",
             choices = NULL,
-            multiple = TRUE
+            multiple = TRUE,
+            options = list(plugins = "remove_button")
         )
     )
 }
@@ -48,7 +50,7 @@ server_classify_data <- function(id) {
         })
 
         observeEvent(input$target, {
-            updateSelectInput(
+            updateSelectizeInput(
                 session,
                 "features",
                 choices = setdiff(cols(), input$target),
@@ -57,7 +59,8 @@ server_classify_data <- function(id) {
         })
 
         reactive({
-            select(data(), all_of(c(input$target, input$features)))
+            select(data(), all_of(c(input$target, input$features))) |>
+                DT::datatable()
         })
     })
 }
