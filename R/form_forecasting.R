@@ -3,8 +3,8 @@ library(bslib)
 
 ui_forecasting <- function(id) {
     tagList(
-        checkboxInput(
-            inputId = NS(id, "apply"),
+        input_switch(
+            id = NS(id, "apply"),
             label = "Apply forecasting."
         ) |> helper_("form_forecasting_apply"),
         numericInput(
