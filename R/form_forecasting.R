@@ -1,4 +1,5 @@
 library(shiny)
+library(bslib)
 
 ui_forecasting <- function(id) {
     tagList(

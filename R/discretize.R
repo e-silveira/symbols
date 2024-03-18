@@ -10,6 +10,7 @@ source("lib/symbolize.R")
 ui_discretize_input <- function(id) {
     list(
         accordion(
+            open = FALSE,
             accordion_panel(
                 title = "Data",
                 icon = bs_icon("filetype-csv"),
@@ -96,9 +97,10 @@ server_discretize <- function(id) {
                 df_symbolic()
             },
             options = list(
-                pageLength = 10,
+                paging = FALSE,
                 searching = FALSE,
-                scrollX = TRUE
+                scrollX = TRUE,
+                scrollY = TRUE
             )
         ) |> bindEvent(input$apply)
 

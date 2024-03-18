@@ -2,23 +2,29 @@ library(shiny)
 library(shinyhelper)
 library(bslib)
 
+theme_light <- bs_theme(
+    primary = "#757575",
+    secondary = "#757575",
+    preset = "bootstrap"
+)
+
 ui <- page_fluid(
-    theme = bs_theme(
-        primary = "#757575",
-        secondary = "#6B6B6B",
-        preset = "bootstrap"
-    ),
+    theme = theme_light,
     page_navbar(
         title = "Symbols!",
-        tabPanel(
+        nav_panel(
             title = "Discretize",
             icon = bs_icon("bricks"),
             ui_discretize("discretize"),
         ),
-        tabPanel(
+        nav_panel(
             title = "Classify",
             icon = bs_icon("boxes"),
             ui_classify("classify"),
+        ),
+        nav_spacer(),
+        nav_item(
+            input_dark_mode(id = "dark_mode", mode = "light")
         )
     )
 )
