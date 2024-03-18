@@ -7,6 +7,7 @@ ui_classify <- function(id) {
         sidebar = sidebar(
             width = "33%",
             accordion(
+                open = FALSE,
                 accordion_panel(
                     title = "Data",
                     icon = bs_icon("filetype-csv"),
@@ -22,7 +23,6 @@ ui_classify <- function(id) {
             actionButton(
                 inputId = NS(id, "apply"),
                 label = "Apply",
-                # icon = bs_icon("arrow-right-square")
             )
         ),
         navset_underline(
@@ -55,9 +55,10 @@ server_classify <- function(id) {
                 data()
             },
             options = list(
-                pageLength = 10,
+                paging = FALSE,
                 searching = FALSE,
-                scrollX = TRUE
+                scrollX = TRUE,
+                scrollY = TRUE
             )
         ) |> bindEvent(input$apply)
 
