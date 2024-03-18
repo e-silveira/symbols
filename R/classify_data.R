@@ -59,8 +59,7 @@ server_classify_data <- function(id) {
         })
 
         reactive({
-            select(data(), all_of(c(input$target, input$features))) |>
-                DT::datatable()
+            select(data(), all_of(c(input$target, input$features)))
         })
     })
 }
