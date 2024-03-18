@@ -7,7 +7,7 @@ ui_classify_data <- function(id) {
             inputId = NS(id, "file"),
             label = "Upload the data file:",
             accept = ".csv",
-            placeholder = "dengue.csv"
+            placeholder = "iris.csv"
         ),
         selectInput(
             inputId = NS(id, "target"),
@@ -25,7 +25,7 @@ ui_classify_data <- function(id) {
 
 server_classify_data <- function(id) {
     moduleServer(id, function(input, output, session) {
-        current_data <- reactiveVal(read.csv("./data/dengue.csv"))
+        current_data <- reactiveVal(iris)
 
         data <- reactive({
             if (isTruthy(input$file)) {

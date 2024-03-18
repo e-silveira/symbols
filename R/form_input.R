@@ -8,7 +8,7 @@ ui_input <- function(id) {
             inputId = NS(id, "file"),
             label = "Select a data file:",
             accept = ".csv",
-            placeholder = "dengue.csv"
+            placeholder = "santa_maria_dengue.csv"
         ) |> helper_("form_input_file"),
         selectInput(
             inputId = NS(id, "attr"),
@@ -33,7 +33,7 @@ ui_input <- function(id) {
 
 server_input <- function(id) {
     moduleServer(id, function(input, output, session) {
-        current_data <- reactiveVal(read.csv("./data/dengue.csv"))
+        current_data <- reactiveVal(read.csv("./data/santa_maria_dengue.csv"))
 
         data <- reactive({
             if (isTruthy(input$file)) {
