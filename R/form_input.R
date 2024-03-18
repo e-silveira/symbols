@@ -14,19 +14,16 @@ ui_input <- function(id) {
             inputId = NS(id, "attr"),
             label = "Select the column to discretize:",
             choices = NULL,
-            selectize = FALSE,
         ) |> helper_("form_input_attr"),
         selectInput(
             inputId = NS(id, "time"),
             label = "Select the time column:",
             choices = NULL,
-            selectize = FALSE,
         ) |> helper_("form_input_time"),
         selectInput(
             inputId = NS(id, "date_format"),
             label = "Select the date format:",
             choices = date_formats,
-            selectize = FALSE,
         ) |> helper_("form_input_date_format"),
     )
 }

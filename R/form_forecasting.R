@@ -12,11 +12,12 @@ ui_forecasting <- function(id) {
             label = "Specify the number of time units:",
             value = 10,
         ) |> helper_("form_forecasting_periods"),
-        selectInput(
+        selectizeInput(
             inputId = NS(id, "seasonality"),
             label = "Select the seasonality kind:",
             choices = c("Daily", "Weekly", "Yearly"),
-            multiple = TRUE
+            multiple = TRUE,
+            options = list(plugins = "remove_button")
         ) |> helper_("form_forecasting_seasonality"),
         selectInput(
             inputId = NS(id, "mode"),
