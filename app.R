@@ -13,6 +13,10 @@ ui <- page_fluid(
     page_navbar(
         title = "Symbols!",
         nav_panel(
+            title = "Input",
+            icon = bs_icon("database-up")
+        ),
+        nav_panel(
             title = "Discretize",
             icon = bs_icon("bricks"),
             ui_discretize("discretize"),
