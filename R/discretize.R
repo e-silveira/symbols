@@ -14,7 +14,7 @@ ui_discretize_input <- function(id) {
             accordion_panel(
                 title = "Data",
                 icon = bs_icon("filetype-csv"),
-                ui_input(NS(id, "input")),
+                ui_input_(NS(id, "input")),
             ),
             accordion_panel(
                 title = "Symbolic",
@@ -69,7 +69,7 @@ ui_discretize <- function(id) {
 
 server_discretize <- function(id) {
     moduleServer(id, function(input, output, session) {
-        opt_input <- server_input("input")
+        opt_input <- server_input_("input")
         opt_symbolic <- server_symbolic("symbolic")
         opt_forecasting <- server_forecasting("forecasting")
 

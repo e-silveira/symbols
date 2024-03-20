@@ -2,7 +2,7 @@ library(shiny)
 library(shinyhelper)
 library(lubridate)
 
-ui_input <- function(id) {
+ui_input_ <- function(id) {
     tagList(
         fileInput(
             inputId = NS(id, "file"),
@@ -28,7 +28,7 @@ ui_input <- function(id) {
     )
 }
 
-server_input <- function(id) {
+server_input_ <- function(id) {
     moduleServer(id, function(input, output, session) {
         current_data <- reactiveVal(read.csv("./data/santa_maria_dengue.csv"))
 

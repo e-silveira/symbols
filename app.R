@@ -3,8 +3,8 @@ library(shinyhelper)
 library(bslib)
 
 theme_light <- bs_theme(
-    primary = "#757575",
-    secondary = "#757575",
+    primary = "#BBBBBB",
+    secondary = "#555555",
     preset = "bootstrap"
 )
 
@@ -14,7 +14,8 @@ ui <- page_fluid(
         title = "Symbols!",
         nav_panel(
             title = "Input",
-            icon = bs_icon("database-up")
+            icon = bs_icon("database-up"),
+            ui_input("input")
         ),
         nav_panel(
             title = "Discretize",
@@ -37,6 +38,7 @@ server <- function(input, output, session) {
     observe_helpers(help_dir = "help")
     server_discretize("discretize")
     server_classify("classify")
+    data <- server_input("input")
 }
 
 shinyApp(ui, server)
