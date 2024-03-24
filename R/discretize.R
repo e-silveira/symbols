@@ -9,24 +9,26 @@ source("lib/symbolize.R")
 
 ui_discretize_input <- function(id) {
     list(
-        accordion(
-            open = FALSE,
-            accordion_panel(
-                title = "Selection",
-                icon = bs_icon("filetype-csv"),
-                ui_input_(NS(id, "input")),
-            ),
-            accordion_panel(
-                title = "Symbolic",
-                icon = bs_icon("sort-alpha-up-alt"),
-                ui_symbolic(NS(id, "symbolic")),
-            ),
-            accordion_panel(
-                title = "Forecasting",
-                icon = bs_icon("magic"),
-                ui_forecasting(NS(id, "forecasting")),
-            ),
-            header = br(),
+        div(
+            accordion(
+                open = FALSE,
+                accordion_panel(
+                    title = "Selection",
+                    icon = bs_icon("filetype-csv"),
+                    ui_input_(NS(id, "input")),
+                ),
+                accordion_panel(
+                    title = "Symbolic",
+                    icon = bs_icon("sort-alpha-up-alt"),
+                    ui_symbolic(NS(id, "symbolic")),
+                ),
+                accordion_panel(
+                    title = "Forecasting",
+                    icon = bs_icon("magic"),
+                    ui_forecasting(NS(id, "forecasting")),
+                ),
+                header = br(),
+            )
         ),
         actionButton(
             inputId = NS(id, "apply"),
@@ -61,6 +63,7 @@ ui_discretize <- function(id) {
     layout_sidebar(
         sidebar = sidebar(
             width = "33%",
+            tab_header("Discretization"),
             !!!ui_discretize_input(id),
         ),
         !!!ui_discretize_output(id),
