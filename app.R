@@ -35,10 +35,10 @@ ui <- page_fluid(
 )
 
 server <- function(input, output, session) {
-    observe_helpers(help_dir = "help")
-    server_discretize("discretize")
-    server_classify("classify")
     data <- server_input("input")
+    observe_helpers(help_dir = "help")
+    server_discretize("discretize", data)
+    server_classify("classify", data)
 }
 
 shinyApp(ui, server)

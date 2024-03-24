@@ -10,6 +10,7 @@ ui_input <- function(id) {
         border = TRUE,
         border_radius = TRUE,
         sidebar = sidebar(
+            title = "Visualization",
             width = "33%",
             fileInput(
                 inputId = NS(id, "file"),
@@ -23,6 +24,15 @@ ui_input <- function(id) {
                 choices = colnames(iris),
                 multiple = TRUE,
                 options = list(plugins = "remove_button")
+            ),
+            selectizeInput(
+                inputId = NS(id, "colnumber"),
+                label = "Select the grid width:",
+                choices = c(1, 2)
+            ),
+            actionButton(
+                inputId = NS(id, "visualize"),
+                label = "Visualize"
             )
         ),
         uiOutput(NS(id, "summary"))
@@ -43,29 +53,49 @@ server_input <- function(id) {
         })
 
         output$summary <- renderUI({
-            map(input$colnames, \(colname) {
-                navset_card_underline(
-                    title = colname,
-                    nav_panel(
-                        title = "Statistics",
-                        mean(data()[[colname]])
-                    ),
-                    nav_panel(
-                        title = "Graph",
-                        renderPlot(plot(data()[[colname]]))
-                    ),
-                    nav_panel(
-                        title = "Density",
-                        renderPlot(
-                            density(data()[[colname]]) |> plot()
+            n <- as.numeric(input$colnumber)
+            layout_column_wrap(
+                width = 1 / n,
+                !!!map(input$colnames, \(colname) {
+                    navset_card_underline(
+                        title = colname,
+                        nav_panel(
+                            title = "Statistics",
+                            info(data()[[colname]])
+                        ),
+                        nav_panel(
+                            title = "Graph",
+                            renderPlot(info_plot(data()[[colname]]))
+                        ),
+                        nav_panel(
+                            title = "Density",
+                            renderPlot(
+                                info_density(data()[[colname]])
+                            )
                         )
                     )
-                )
-            })
-        }) |> bindEvent(input$colnames)
+                })
+            )
+        }) |> bindEvent(input$visualize)
 
         reactive({
             data()
         })
     })
+}
+
+info <- function(data) {
+    card()
+}
+
+info_plot <- function(column) {
+    data <- data.frame(x = seq_along(column), y = column)
+    ggplot(data) +
+        geom_point(aes(x, y))
+}
+
+info_density <- function(column) {
+    data <- data.frame(y = column)
+    ggplot(data) +
+        geom_density(aes(y))
 }

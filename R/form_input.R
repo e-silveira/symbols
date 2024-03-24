@@ -4,12 +4,6 @@ library(lubridate)
 
 ui_input_ <- function(id) {
     tagList(
-        fileInput(
-            inputId = NS(id, "file"),
-            label = "Select a data file:",
-            accept = ".csv",
-            placeholder = "santa_maria_dengue.csv"
-        ) |> helper_("form_input_file"),
         selectInput(
             inputId = NS(id, "attr"),
             label = "Select the column to discretize:",
@@ -28,17 +22,8 @@ ui_input_ <- function(id) {
     )
 }
 
-server_input_ <- function(id) {
+server_input_ <- function(id, data) {
     moduleServer(id, function(input, output, session) {
-        current_data <- reactiveVal(read.csv("./data/santa_maria_dengue.csv"))
-
-        data <- reactive({
-            if (isTruthy(input$file)) {
-                current_data(read.csv(input$file$datapath))
-            }
-            current_data()
-        })
-
         observeEvent(data(), {
             updateSelectInput(
                 session,
