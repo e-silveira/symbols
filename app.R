@@ -13,7 +13,7 @@ ui <- page_fluid(
     page_navbar(
         title = "Symbols!",
         nav_panel(
-            title = "Input",
+            title = "Data",
             icon = bs_icon("database-up"),
             ui_input("input")
         ),

@@ -84,3 +84,10 @@ make_fake_time <- function(n, initial = as.Date("1000-01-01"), by = "day") {
 internal_bp <- function(bp) {
     bp[seq(2, length(bp) - 1)]
 }
+
+tab_header <- function(title) {
+    tagList(
+        h5(title, style = "margin: 0"),
+        hr(style = "color: #757575; margin-bottom: 0; margin-top: 0"),
+    )
+}

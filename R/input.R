@@ -10,8 +10,8 @@ ui_input <- function(id) {
         border = TRUE,
         border_radius = TRUE,
         sidebar = sidebar(
-            title = "Visualization",
             width = "33%",
+            tab_header("Input and Visualization"),
             fileInput(
                 inputId = NS(id, "file"),
                 label = "Select a data file:",
@@ -56,6 +56,7 @@ server_input <- function(id) {
             n <- as.numeric(input$colnumber)
             layout_column_wrap(
                 width = 1 / n,
+                heights_equal = "row",
                 !!!map(input$colnames, \(colname) {
                     navset_card_underline(
                         title = colname,
