@@ -9,7 +9,7 @@ ui_classify <- function(id) {
             accordion(
                 open = FALSE,
                 accordion_panel(
-                    title = "Data",
+                    title = "Selection",
                     icon = bs_icon("filetype-csv"),
                     ui_classify_data(NS(id, "data")),
                 ),
@@ -45,14 +45,14 @@ ui_classify <- function(id) {
     )
 }
 
-server_classify <- function(id) {
+server_classify <- function(id, data) {
     moduleServer(id, function(input, output, session) {
-        data <- server_classify_data("data")
-        tree <- server_classify_tree("tree", data)
+        attr <- server_classify_data("data", data)
+        tree <- server_classify_tree("tree", attr)
 
         output$table <- DT::renderDataTable(
             {
-                data()
+                attr()
             },
             options = list(
                 paging = FALSE,
