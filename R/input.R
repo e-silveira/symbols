@@ -33,6 +33,16 @@ ui_input <- function(id) {
             actionButton(
                 inputId = NS(id, "visualize"),
                 label = "Visualize"
+            ),
+            hr(),
+            selectizeInput(
+                inputId = NS(id, "colname_reset"),
+                label = "Select column to reset:",
+                choices = colnames(iris),
+            ),
+            actionButton(
+                inputId = NS(id, "reset"),
+                label = "Reset"
             )
         ),
         uiOutput(NS(id, "summary"))
@@ -41,15 +51,23 @@ ui_input <- function(id) {
 
 server_input <- function(id) {
     moduleServer(id, function(input, output, session) {
-        data <- reactiveVal(iris)
+        original <- reactiveVal(iris)
+        modified <- reactiveVal(iris)
 
         observeEvent(input$file, {
-            data(vroom(input$file$datapath))
+            original(vroom(input$file$datapath))
+            modified(original())
 
             updateSelectizeInput(
                 inputId = "colnames",
-                choices = colnames(data())
+                choices = colnames(original())
             )
+        })
+
+        observeEvent(input$reset, {
+            df <- modified()
+            df[[input$colname_reset]] <- original()[[input$colname_reset]]
+            modified(df)
         })
 
         output$summary <- renderUI({
@@ -62,16 +80,16 @@ server_input <- function(id) {
                         title = colname,
                         nav_panel(
                             title = "Statistics",
-                            info(data()[[colname]])
+                            info(modified()[[colname]])
                         ),
                         nav_panel(
                             title = "Graph",
-                            renderPlot(info_plot(data()[[colname]]))
+                            renderPlot(info_plot(modified()[[colname]]))
                         ),
                         nav_panel(
                             title = "Density",
                             renderPlot(
-                                info_density(data()[[colname]])
+                                info_density(modified()[[colname]])
                             )
                         )
                     )
@@ -79,9 +97,10 @@ server_input <- function(id) {
             )
         }) |> bindEvent(input$visualize)
 
-        reactive({
-            data()
-        })
+        list(
+            original = original,
+            modified = modified
+        )
     })
 }
 

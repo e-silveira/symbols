@@ -37,8 +37,8 @@ ui <- page_fluid(
 server <- function(input, output, session) {
     data <- server_input("input")
     observe_helpers(help_dir = "help")
-    server_discretize("discretize", data)
-    server_classify("classify", data)
+    server_discretize("discretize", data$original, data$modified)
+    server_classify("classify", data$modified)
 }
 
 shinyApp(ui, server)
