@@ -70,9 +70,9 @@ ui_discretize <- function(id) {
     )
 }
 
-server_discretize <- function(id, original, modified) {
+server_discretize <- function(id, data) {
     moduleServer(id, function(input, output, session) {
-        opt_input <- server_input_("input", original)
+        opt_input <- server_input_("input", data)
         opt_symbolic <- server_symbolic("symbolic")
         opt_forecasting <- server_forecasting("forecasting")
 
@@ -106,13 +106,6 @@ server_discretize <- function(id, original, modified) {
                 scrollY = TRUE
             )
         ) |> bindEvent(input$apply)
-
-        observeEvent(input$apply, {
-            df <- modified()
-            name <- opt_input()[[4]]
-            df[[name]] <- df_symbolic()$Symbols
-            modified(df)
-        })
 
         output$plot <- renderPlot({
             if (opt_forecasting()$apply) {
