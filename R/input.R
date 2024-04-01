@@ -19,23 +19,43 @@ ui_input <- function(id) {
                 placeholder = "iris.csv"
             ),
             selectizeInput(
-                inputId = NS(id, "colnames"),
-                label = "Select columns to inspect:",
-                choices = colnames(iris),
-                multiple = TRUE,
-                options = list(plugins = "remove_button")
+                inputId = NS(id, "y"),
+                label = "Select the main attribute:",
+                choices = colnames(iris)
             ),
             selectizeInput(
-                inputId = NS(id, "colnumber"),
-                label = "Select the grid width:",
-                choices = c(1, 2)
+                inputId = NS(id, "x"),
+                label = "Select the secondary attribute:",
+                choices = colnames(iris),
+                options = list(plugins = "clear_button")
             ),
-            actionButton(
-                inputId = NS(id, "visualize"),
-                label = "Visualize"
-            )
         ),
-        uiOutput(NS(id, "summary"))
+        navset_underline(
+            nav_panel(
+                title = "Table",
+                DT::dataTableOutput(
+                    outputId = NS(id, "table")
+                )
+            ),
+            nav_panel(
+                title = "Boxplot",
+                plotOutput(
+                    outputId = NS(id, "boxplot")
+                )
+            ),
+            nav_panel(
+                title = "Dotplot",
+                plotOutput(
+                    outputId = NS(id, "dotplot")
+                )
+            ),
+            nav_panel(
+                title = "Distribution",
+                plotOutput(
+                    outputId = NS(id, "distribution")
+                )
+            )
+        )
     )
 }
 
@@ -44,40 +64,48 @@ server_input <- function(id) {
         data <- reactiveVal(iris)
 
         observeEvent(input$file, {
-            data(vroom(input$file$datapath))
+            data(fread(input$file$datapath))
 
             updateSelectizeInput(
-                inputId = "colnames",
+                inputId = "x",
+                choices = colnames(data())
+            )
+
+            updateSelectizeInput(
+                inputId = "y",
                 choices = colnames(data())
             )
         })
 
-        output$summary <- renderUI({
-            n <- as.numeric(input$colnumber)
-            layout_column_wrap(
-                width = 1 / n,
-                heights_equal = "row",
-                !!!map(input$colnames, \(colname) {
-                    navset_card_underline(
-                        title = colname,
-                        nav_panel(
-                            title = "Statistics",
-                            info(data()[[colname]])
-                        ),
-                        nav_panel(
-                            title = "Graph",
-                            renderPlot(info_plot(data()[[colname]]))
-                        ),
-                        nav_panel(
-                            title = "Density",
-                            renderPlot(
-                                info_density(data()[[colname]])
-                            )
-                        )
-                    )
-                })
+        output$table <- DT::renderDataTable(
+            {
+                data()
+            },
+            options = list(
+                paging = FALSE,
+                searching = FALSE,
+                scrollX = TRUE,
+                scrollY = TRUE
             )
-        }) |> bindEvent(input$visualize)
+        ) |> bindEvent(data())
+
+        output$boxplot <- renderPlot({
+            boxplot(data(), input$x, input$y) +
+                theme_minimal() +
+                scale_color_viridis_d()
+        })
+
+        output$dotplot <- renderPlot({
+            dotplot(data(), input$x, input$y) +
+                theme_minimal() +
+                scale_color_viridis_d()
+        })
+
+        output$distribution <- renderPlot({
+            distribution(data(), input$x, input$y) +
+                theme_minimal() +
+                scale_color_viridis_d()
+        })
 
         reactive({
             data()
@@ -85,18 +113,59 @@ server_input <- function(id) {
     })
 }
 
-info <- function(data) {
-    card()
+boxplot <- function(data, x, y) {
+    if (isTruthy(x)) {
+        df <- data.frame(x_ = data[[x]], y_ = data[[y]])
+        ggplot(df) +
+            geom_boxplot(aes(x = x_, y = y_)) +
+            labs(x = x, y = y)
+    } else {
+        df <- data.frame(y_ = data[[y]])
+        ggplot(df) +
+            geom_boxplot(aes(y = y_)) +
+            labs(y = y)
+    }
 }
 
-info_plot <- function(column) {
-    data <- data.frame(x = seq_along(column), y = column)
-    ggplot(data) +
-        geom_point(aes(x, y))
+dotplot <- function(data, x, y) {
+    if (isTruthy(x)) {
+        df <- data.frame(x_ = data[[x]], y_ = data[[y]])
+        if (is.numeric(df$x)) {
+            ggplot(df) +
+                geom_point(aes(x = x_, y = y_)) +
+                labs(x = x, y = y)
+        } else {
+            ggplot(df) +
+                geom_point(aes(x = seq_along(y_), y = y_, colour = x_)) +
+                labs(x = "", y = y, colour = x)
+        }
+    } else {
+        df <- data.frame(y_ = data[[y]])
+        ggplot(df) +
+            geom_point(aes(x = seq_along(y_), y = y_)) +
+            labs(x = "", y = y)
+    }
 }
 
-info_density <- function(column) {
-    data <- data.frame(y = column)
-    ggplot(data) +
-        geom_density(aes(y))
+distribution <- function(data, x, y) {
+    if (isTruthy(x)) {
+        df <- data.frame(x_ = data[[x]], y_ = data[[y]])
+        if (is.numeric(df$x_)) {
+            ggplot(df, aes(x = x_, y = y_)) +
+                geom_density_2d_filled(alpha = 0.7) +
+                geom_density_2d(linewidth = 0.25, colour = "black") +
+                geom_point() +
+                labs(x = x, y = y, fill = "Level")
+        } else {
+            ggplot(df, aes(x = y_)) +
+                geom_density() +
+                facet_wrap(vars(x_)) +
+                labs(x = y, y = "Density")
+        }
+    } else {
+        df <- data.frame(y_ = data[[y]])
+        ggplot(df) +
+            geom_density(aes(x = y_)) +
+            labs(x = y, y = "Density")
+    }
 }

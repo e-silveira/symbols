@@ -112,9 +112,13 @@ server_discretize <- function(id, data) {
                 plot_symbolic_forecasting(
                     df_symbolic(),
                     df_forecasting()
-                )
+                ) +
+                    theme_minimal() +
+                    scale_color_viridis_d()
             } else {
-                plot_symbolic(df_symbolic())
+                plot_symbolic(df_symbolic()) +
+                    theme_minimal() +
+                    scale_color_viridis_d()
             }
         }) |> bindEvent(input$apply)
     })
