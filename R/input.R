@@ -2,8 +2,63 @@ library(shiny)
 library(bslib)
 library(data.table)
 library(purrr)
+library(dplyr)
 library(vroom)
 library(ggplot2)
+library(ggpointdensity)
+
+
+ui_scatterplot_selection <- function(id, data) {
+    list(
+        selectizeInput(
+            inputId = NS(id, "main"),
+            label = "Select the main attribute:",
+            choices = select(data, where(is.numeric)) |> colnames()
+        ),
+        selectizeInput(
+            inputId = NS(id, "secondary"),
+            label = "Select the secondary attribute:",
+            choices = select(
+                data,
+                where(function(x) is.numeric(x) || is.instant(x))
+            ) |> colnames(),
+            options = list(plugins = "clear_button")
+        ),
+        selectizeInput(
+            inputId = NS(id, "grouping"),
+            label = "Select the grouping attribute:",
+            choices = select(
+                data,
+                where(function(x) is.factor(x) || is.character(x))
+            ) |> colnames(),
+            options = list(plugins = "clear_button")
+        )
+    )
+}
+
+ui_distribution_selection <- function(id, data) {
+    list(
+        selectizeInput(
+            inputId = NS(id, "main"),
+            label = "Select the main attribute:",
+            choices = select(data, where(is.numeric)) |> colnames()
+        ),
+        selectizeInput(
+            inputId = NS(id, "secondary"),
+            label = "Select the secondary attribute:",
+            choices = select(data, where(is.numeric)) |> colnames()
+        ),
+        selectizeInput(
+            inputId = NS(id, "grouping"),
+            label = "Select the grouping attribute:",
+            choices = select(
+                data,
+                where(function(x) is.factor(x) || is.character(x))
+            ) |> colnames(),
+            options = list(plugins = "clear_button")
+        )
+    )
+}
 
 ui_input <- function(id) {
     layout_sidebar(
@@ -18,42 +73,25 @@ ui_input <- function(id) {
                 accept = ".csv",
                 placeholder = "iris.csv"
             ),
-            selectizeInput(
-                inputId = NS(id, "y"),
-                label = "Select the main attribute:",
-                choices = colnames(iris)
-            ),
-            selectizeInput(
-                inputId = NS(id, "x"),
-                label = "Select the secondary attribute:",
-                choices = colnames(iris),
-                options = list(plugins = "clear_button")
-            ),
+            uiOutput(outputId = NS(id, "var_selection")),
         ),
         navset_underline(
+            id = NS(id, "current_tab"),
             nav_panel(
                 title = "Table",
-                DT::dataTableOutput(
-                    outputId = NS(id, "table")
-                )
+                DT::dataTableOutput(outputId = NS(id, "table"))
             ),
             nav_panel(
                 title = "Boxplot",
-                plotOutput(
-                    outputId = NS(id, "boxplot")
-                )
+                plotOutput(outputId = NS(id, "boxplot"))
             ),
             nav_panel(
-                title = "Dotplot",
-                plotOutput(
-                    outputId = NS(id, "dotplot")
-                )
+                title = "Scatterplot",
+                plotOutput(outputId = NS(id, "scatterplot"))
             ),
             nav_panel(
                 title = "Distribution",
-                plotOutput(
-                    outputId = NS(id, "distribution")
-                )
+                plotOutput(outputId = NS(id, "distribution"))
             )
         )
     )
@@ -62,110 +100,82 @@ ui_input <- function(id) {
 server_input <- function(id) {
     moduleServer(id, function(input, output, session) {
         data <- reactiveVal(iris)
+        selected_cols <- reactiveValues(
+            boxplot = NULL,
+            scatterplot = NULL,
+            distribution = NULL
+        )
 
         observeEvent(input$file, {
-            data(fread(input$file$datapath))
-
-            updateSelectizeInput(
-                inputId = "x",
-                choices = colnames(data())
-            )
-
-            updateSelectizeInput(
-                inputId = "y",
-                choices = colnames(data())
-            )
+            data(fread(input$file$datapath) |> coerce_data_frame())
         })
 
+        output$var_selection <- renderUI(
+            switch(input$current_tab,
+                "Table" = NULL,
+                "Boxplot" = ui_boxplot_selection(id, data()),
+                "Scatterplot" = ui_scatterplot_selection(id, data()),
+                "Distribution" = ui_distribution_selection(id, data()),
+            )
+        ) |> bindEvent(input$current_tab)
+
         output$table <- DT::renderDataTable(
-            {
-                data()
-            },
+            data(),
             options = list(
-                paging = FALSE,
-                searching = FALSE,
-                scrollX = TRUE,
-                scrollY = TRUE
+                paging = FALSE, searching = FALSE,
+                scrollX = TRUE, scrollY = TRUE
             )
         ) |> bindEvent(data())
 
         output$boxplot <- renderPlot({
-            boxplot(data(), input$x, input$y) +
-                theme_minimal() +
-                scale_color_viridis_d()
+            req(input$main)
+            boxplot(data(), input$main, input$grouping)
         })
 
-        output$dotplot <- renderPlot({
-            dotplot(data(), input$x, input$y) +
-                theme_minimal() +
-                scale_color_viridis_d()
+        output$scatterplot <- renderPlot({
+            req(input$main)
+            scatterplot(data(), input$main, input$secondary, input$grouping)
         })
 
         output$distribution <- renderPlot({
-            distribution(data(), input$x, input$y) +
-                theme_minimal() +
-                scale_color_viridis_d()
+            req(input$main)
+            distribution(data(), input$main, input$secondary, input$grouping)
         })
 
-        reactive({
-            data()
-        })
+        data
     })
 }
 
-boxplot <- function(data, x, y) {
-    if (isTruthy(x)) {
-        df <- data.frame(x_ = data[[x]], y_ = data[[y]])
-        ggplot(df) +
-            geom_boxplot(aes(x = x_, y = y_)) +
-            labs(x = x, y = y)
-    } else {
-        df <- data.frame(y_ = data[[y]])
-        ggplot(df) +
-            geom_boxplot(aes(y = y_)) +
-            labs(y = y)
+boxplot <- function(data, main, grouping) {
+    print(paste(main, grouping))
+    p <- ggplot(data, aes(y = .data[[main]]))
+
+    if (isTruthy(grouping)) {
+        p <- p + aes(x = .data[[grouping]])
     }
+
+    p + geom_boxplot() + theme_minimal()
 }
 
-dotplot <- function(data, x, y) {
-    if (isTruthy(x)) {
-        df <- data.frame(x_ = data[[x]], y_ = data[[y]])
-        if (is.numeric(df$x)) {
-            ggplot(df) +
-                geom_point(aes(x = x_, y = y_)) +
-                labs(x = x, y = y)
-        } else {
-            ggplot(df) +
-                geom_point(aes(x = seq_along(y_), y = y_, colour = x_)) +
-                labs(x = "", y = y, colour = x)
-        }
+scatterplot <- function(data, main, secondary, grouping) {
+    print(paste(main, secondary, grouping))
+    p <- ggplot(data, aes(y = .data[[main]]))
+
+    if (isTruthy(secondary)) {
+        p <- p + aes(x = .data[[secondary]])
     } else {
-        df <- data.frame(y_ = data[[y]])
-        ggplot(df) +
-            geom_point(aes(x = seq_along(y_), y = y_)) +
-            labs(x = "", y = y)
+        p <- p + aes(x = seq_along(.data[[main]])) + labs(x = "")
     }
+
+    if (isTruthy(grouping)) {
+        p <- p + aes(colour = .data[[grouping]])
+    }
+
+    p +
+        geom_point() +
+        theme_minimal() +
+        scale_colour_viridis_d()
 }
 
-distribution <- function(data, x, y) {
-    if (isTruthy(x)) {
-        df <- data.frame(x_ = data[[x]], y_ = data[[y]])
-        if (is.numeric(df$x_)) {
-            ggplot(df, aes(x = x_, y = y_)) +
-                geom_density_2d_filled(alpha = 0.7) +
-                geom_density_2d(linewidth = 0.25, colour = "black") +
-                geom_point() +
-                labs(x = x, y = y, fill = "Level")
-        } else {
-            ggplot(df, aes(x = y_)) +
-                geom_density() +
-                facet_wrap(vars(x_)) +
-                labs(x = y, y = "Density")
-        }
-    } else {
-        df <- data.frame(y_ = data[[y]])
-        ggplot(df) +
-            geom_density(aes(x = y_)) +
-            labs(x = y, y = "Density")
-    }
+distribution <- function(data, main, secondary, grouping) {
 }

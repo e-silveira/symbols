@@ -46,6 +46,18 @@ get_date_colnames <- function(data) {
     ) |> colnames()
 }
 
+coerce_data_frame <- function(df) {
+    date_colnames <- get_date_colnames(df)
+
+    imodify(df, function(column, colname) {
+        if (colname %in% date_colnames) {
+            parse_date_time(column, date_formats)
+        } else {
+            column
+        }
+    })
+}
+
 
 try_subset <- function(data, colname) {
     tryCatch(

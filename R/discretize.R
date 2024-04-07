@@ -114,11 +114,11 @@ server_discretize <- function(id, data) {
                     df_forecasting()
                 ) +
                     theme_minimal() +
-                    scale_color_viridis_d()
+                    scale_color_viridis_d(option = "plasma")
             } else {
                 plot_symbolic(df_symbolic()) +
                     theme_minimal() +
-                    scale_color_viridis_d()
+                    scale_color_viridis_d(option = "plasma")
             }
         }) |> bindEvent(input$apply)
     })
