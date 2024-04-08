@@ -47,7 +47,7 @@ ui_input <- function(id) {
             id = NS(id, "current_tab"),
             nav_panel(
                 title = "Table",
-                DT::dataTableOutput(outputId = NS(id, "table"))
+                dataTableOutput(outputId = NS(id, "table"))
             ),
             nav_panel(
                 title = "Boxplot",
@@ -81,7 +81,7 @@ server_input <- function(id) {
             nav_select("dynamic_selection", input$current_tab)
         })
 
-        output$table <- DT::renderDataTable(
+        output$table <- renderDataTable(
             data(),
             options = list(
                 paging = FALSE, searching = FALSE,
