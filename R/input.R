@@ -5,60 +5,6 @@ library(purrr)
 library(dplyr)
 library(vroom)
 library(ggplot2)
-library(ggpointdensity)
-
-
-ui_scatterplot_selection <- function(id, data) {
-    list(
-        selectizeInput(
-            inputId = NS(id, "main"),
-            label = "Select the main attribute:",
-            choices = select(data, where(is.numeric)) |> colnames()
-        ),
-        selectizeInput(
-            inputId = NS(id, "secondary"),
-            label = "Select the secondary attribute:",
-            choices = select(
-                data,
-                where(function(x) is.numeric(x) || is.instant(x))
-            ) |> colnames(),
-            options = list(plugins = "clear_button")
-        ),
-        selectizeInput(
-            inputId = NS(id, "grouping"),
-            label = "Select the grouping attribute:",
-            choices = select(
-                data,
-                where(function(x) is.factor(x) || is.character(x))
-            ) |> colnames(),
-            options = list(plugins = "clear_button")
-        )
-    )
-}
-
-ui_distribution_selection <- function(id, data) {
-    list(
-        selectizeInput(
-            inputId = NS(id, "main"),
-            label = "Select the main attribute:",
-            choices = select(data, where(is.numeric)) |> colnames()
-        ),
-        selectizeInput(
-            inputId = NS(id, "secondary"),
-            label = "Select the secondary attribute:",
-            choices = select(data, where(is.numeric)) |> colnames()
-        ),
-        selectizeInput(
-            inputId = NS(id, "grouping"),
-            label = "Select the grouping attribute:",
-            choices = select(
-                data,
-                where(function(x) is.factor(x) || is.character(x))
-            ) |> colnames(),
-            options = list(plugins = "clear_button")
-        )
-    )
-}
 
 ui_input <- function(id) {
     layout_sidebar(
@@ -73,7 +19,29 @@ ui_input <- function(id) {
                 accept = ".csv",
                 placeholder = "iris.csv"
             ),
-            uiOutput(outputId = NS(id, "var_selection")),
+            navset_hidden(
+                id = NS(id, "dynamic_selection"),
+                nav_panel_hidden(
+                    "Table",
+                    NULL
+                ),
+                nav_panel_hidden(
+                    "Boxplot",
+                    ui_input_boxplot(NS(id, "boxplot"))
+                ),
+                nav_panel_hidden(
+                    "Scatterplot",
+                    ui_input_scatterplot(NS(id, "scatterplot"))
+                ),
+                nav_panel_hidden(
+                    "Histogram",
+                    ui_input_histogram(NS(id, "histogram"))
+                ),
+                nav_panel_hidden(
+                    "Distribution",
+                    ui_input_distribution(NS(id, "distribution"))
+                )
+            )
         ),
         navset_underline(
             id = NS(id, "current_tab"),
@@ -90,6 +58,10 @@ ui_input <- function(id) {
                 plotOutput(outputId = NS(id, "scatterplot"))
             ),
             nav_panel(
+                title = "Histogram",
+                plotOutput(outputId = NS(id, "histogram"))
+            ),
+            nav_panel(
                 title = "Distribution",
                 plotOutput(outputId = NS(id, "distribution"))
             )
@@ -100,24 +72,14 @@ ui_input <- function(id) {
 server_input <- function(id) {
     moduleServer(id, function(input, output, session) {
         data <- reactiveVal(iris)
-        selected_cols <- reactiveValues(
-            boxplot = NULL,
-            scatterplot = NULL,
-            distribution = NULL
-        )
 
         observeEvent(input$file, {
             data(fread(input$file$datapath) |> coerce_data_frame())
         })
 
-        output$var_selection <- renderUI(
-            switch(input$current_tab,
-                "Table" = NULL,
-                "Boxplot" = ui_boxplot_selection(id, data()),
-                "Scatterplot" = ui_scatterplot_selection(id, data()),
-                "Distribution" = ui_distribution_selection(id, data()),
-            )
-        ) |> bindEvent(input$current_tab)
+        observeEvent(input$current_tab, {
+            nav_select("dynamic_selection", input$current_tab)
+        })
 
         output$table <- DT::renderDataTable(
             data(),
@@ -127,55 +89,18 @@ server_input <- function(id) {
             )
         ) |> bindEvent(data())
 
-        output$boxplot <- renderPlot({
-            req(input$main)
-            boxplot(data(), input$main, input$grouping)
-        })
+        boxplot <- server_input_boxplot("boxplot", data)
+        output$boxplot <- renderPlot(boxplot())
 
-        output$scatterplot <- renderPlot({
-            req(input$main)
-            scatterplot(data(), input$main, input$secondary, input$grouping)
-        })
+        scatterplot <- server_input_scatterplot("scatterplot", data)
+        output$scatterplot <- renderPlot(scatterplot())
 
-        output$distribution <- renderPlot({
-            req(input$main)
-            distribution(data(), input$main, input$secondary, input$grouping)
-        })
+        distribution <- server_input_distribution("distribution", data)
+        output$distribution <- renderPlot(distribution())
+
+        histogram <- server_input_histogram("histogram", data)
+        output$histogram <- renderPlot(histogram())
 
         data
     })
-}
-
-boxplot <- function(data, main, grouping) {
-    print(paste(main, grouping))
-    p <- ggplot(data, aes(y = .data[[main]]))
-
-    if (isTruthy(grouping)) {
-        p <- p + aes(x = .data[[grouping]])
-    }
-
-    p + geom_boxplot() + theme_minimal()
-}
-
-scatterplot <- function(data, main, secondary, grouping) {
-    print(paste(main, secondary, grouping))
-    p <- ggplot(data, aes(y = .data[[main]]))
-
-    if (isTruthy(secondary)) {
-        p <- p + aes(x = .data[[secondary]])
-    } else {
-        p <- p + aes(x = seq_along(.data[[main]])) + labs(x = "")
-    }
-
-    if (isTruthy(grouping)) {
-        p <- p + aes(colour = .data[[grouping]])
-    }
-
-    p +
-        geom_point() +
-        theme_minimal() +
-        scale_colour_viridis_d()
-}
-
-distribution <- function(data, main, secondary, grouping) {
 }
