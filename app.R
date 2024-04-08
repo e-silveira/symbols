@@ -14,17 +14,14 @@ ui <- page_fluid(
         title = "Symbols!",
         nav_panel(
             title = "Data",
-            icon = bs_icon("database-up"),
             ui_input("input")
         ),
         nav_panel(
             title = "Discretize",
-            icon = bs_icon("bricks"),
             ui_discretize("discretize"),
         ),
         nav_panel(
             title = "Classify",
-            icon = bs_icon("boxes"),
             ui_classify("classify"),
         ),
         nav_spacer(),

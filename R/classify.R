@@ -5,19 +5,17 @@ library(DT)
 ui_classify <- function(id) {
     layout_sidebar(
         sidebar = sidebar(
-            width = "33%",
+            width = "30%",
             tab_header("Classification"),
             div(
                 accordion(
                     open = FALSE,
                     accordion_panel(
                         title = "Selection",
-                        icon = bs_icon("filetype-csv"),
                         ui_classify_data(NS(id, "data")),
                     ),
                     accordion_panel(
                         title = "Tree",
-                        icon = bs_icon("diagram-3"),
                         ui_classify_tree(NS(id, "tree"))
                     ),
                     header = br(),
@@ -31,14 +29,12 @@ ui_classify <- function(id) {
         navset_underline(
             nav_panel(
                 title = "Table",
-                icon = bs_icon("table"),
                 DT::dataTableOutput(
                     outputId = NS(id, "table")
                 )
             ),
             nav_panel(
                 title = "Tree",
-                icon = bs_icon("diagram-3"),
                 plotOutput(
                     outputId = NS(id, "tree")
                 )

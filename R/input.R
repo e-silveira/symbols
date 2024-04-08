@@ -11,13 +11,13 @@ ui_input <- function(id) {
         border = TRUE,
         border_radius = TRUE,
         sidebar = sidebar(
-            width = "33%",
+            width = "30%",
             tab_header("Input and Visualization"),
             fileInput(
                 inputId = NS(id, "file"),
                 label = "Select a data file:",
                 accept = ".csv",
-                placeholder = "iris.csv"
+                placeholder = "diamonds.csv"
             ),
             navset_hidden(
                 id = NS(id, "dynamic_selection"),
@@ -71,7 +71,7 @@ ui_input <- function(id) {
 
 server_input <- function(id) {
     moduleServer(id, function(input, output, session) {
-        data <- reactiveVal(iris)
+        data <- reactiveVal(diamonds)
 
         observeEvent(input$file, {
             data(fread(input$file$datapath) |> coerce_data_frame())
@@ -84,7 +84,8 @@ server_input <- function(id) {
         output$table <- renderDataTable(
             data(),
             options = list(
-                paging = FALSE, searching = FALSE,
+                lengthChange = FALSE,
+                paging = TRUE, searching = FALSE,
                 scrollX = TRUE, scrollY = TRUE
             )
         ) |> bindEvent(data())

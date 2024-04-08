@@ -13,18 +13,15 @@ ui_discretize_input <- function(id) {
             accordion(
                 open = FALSE,
                 accordion_panel(
-                    title = "Selection",
-                    icon = bs_icon("filetype-csv"),
+                    title = "Attribute",
                     ui_input_(NS(id, "input")),
                 ),
                 accordion_panel(
                     title = "Symbolic",
-                    icon = bs_icon("sort-alpha-up-alt"),
                     ui_symbolic(NS(id, "symbolic")),
                 ),
                 accordion_panel(
                     title = "Forecasting",
-                    icon = bs_icon("magic"),
                     ui_forecasting(NS(id, "forecasting")),
                 ),
                 header = br(),
@@ -42,14 +39,12 @@ ui_discretize_output <- function(id) {
         navset_underline(
             nav_panel(
                 title = "Table",
-                icon = bs_icon("table"),
                 DT::dataTableOutput(
                     outputId = NS(id, "table")
                 ),
             ),
             nav_panel(
                 title = "Plot",
-                icon = bs_icon("graph-up"),
                 plotOutput(
                     outputId = NS(id, "plot")
                 ),
@@ -62,7 +57,7 @@ ui_discretize_output <- function(id) {
 ui_discretize <- function(id) {
     layout_sidebar(
         sidebar = sidebar(
-            width = "33%",
+            width = "30%",
             tab_header("Discretization"),
             !!!ui_discretize_input(id),
         ),

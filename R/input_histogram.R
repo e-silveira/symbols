@@ -44,8 +44,13 @@ server_input_histogram <- function(id, data) {
         })
 
         reactive({
-            p <- ggplot(data(), aes(.data[[input$main]])) +
-                geom_histogram(bins = input$bins)
+            p <- ggplot(data(), aes(.data[[input$main]]))
+
+            if (is.numeric(data()[[input$main]])) {
+                p <- p + geom_histogram(bins = input$bins)
+            } else {
+                p <- p + geom_histogram(stat = "count")
+            }
 
             if (isTruthy(input$grouping)) {
                 p <- p + facet_wrap(vars(.data[[input$grouping]]))
