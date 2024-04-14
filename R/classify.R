@@ -18,7 +18,6 @@ ui_classify <- function(id) {
                         title = "Tree",
                         ui_classify_tree(NS(id, "tree"))
                     ),
-                    header = br(),
                 )
             ),
             actionButton(
@@ -29,7 +28,7 @@ ui_classify <- function(id) {
         navset_underline(
             nav_panel(
                 title = "Table",
-                DT::dataTableOutput(
+                dataTableOutput(
                     outputId = NS(id, "table")
                 )
             ),
@@ -38,8 +37,7 @@ ui_classify <- function(id) {
                 plotOutput(
                     outputId = NS(id, "tree")
                 )
-            ),
-            header = br()
+            )
         )
     )
 }
@@ -49,15 +47,14 @@ server_classify <- function(id, data) {
         attr <- server_classify_data("data", data)
         tree <- server_classify_tree("tree", attr)
 
-        output$table <- DT::renderDataTable(
+        output$table <- renderDataTable(
             {
                 attr()
             },
             options = list(
-                paging = FALSE,
-                searching = FALSE,
-                scrollX = TRUE,
-                scrollY = TRUE
+                lengthChange = FALSE,
+                paging = TRUE, searching = FALSE,
+                scrollX = TRUE, scrollY = TRUE
             )
         ) |> bindEvent(input$apply)
 

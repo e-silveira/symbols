@@ -24,7 +24,6 @@ ui_discretize_inputs <- function(id) {
                     title = "Forecasting",
                     ui_discretize_forecasting(NS(id, "forecasting")),
                 ),
-                header = br(),
             )
         ),
         actionButton(
@@ -39,7 +38,7 @@ ui_discretize_outputs <- function(id) {
         navset_underline(
             nav_panel(
                 title = "Table",
-                DT::dataTableOutput(
+                dataTableOutput(
                     outputId = NS(id, "table")
                 ),
             ),
@@ -48,8 +47,7 @@ ui_discretize_outputs <- function(id) {
                 plotOutput(
                     outputId = NS(id, "plot")
                 ),
-            ),
-            header = br(),
+            )
         )
     )
 }
@@ -90,15 +88,14 @@ server_discretize <- function(id, data) {
             )
         })
 
-        output$table <- DT::renderDataTable(
+        output$table <- renderDataTable(
             {
                 df_symbolic()
             },
             options = list(
-                paging = FALSE,
-                searching = FALSE,
-                scrollX = TRUE,
-                scrollY = TRUE
+                lengthChange = FALSE,
+                paging = TRUE, searching = FALSE,
+                scrollX = TRUE, scrollY = TRUE
             )
         ) |> bindEvent(input$apply)
 
