@@ -1,7 +1,7 @@
 library(shiny)
 library(bslib)
 
-ui_forecasting <- function(id) {
+ui_discretize_forecasting <- function(id) {
     tagList(
         input_switch(
             id = NS(id, "apply"),
@@ -27,7 +27,7 @@ ui_forecasting <- function(id) {
     )
 }
 
-server_forecasting <- function(id) {
+server_discretize_forecasting <- function(id) {
     moduleServer(id, function(input, output, session) {
         reactive({
             list(

@@ -3,7 +3,7 @@ library(stringr)
 library(purrr)
 library(magrittr)
 
-ui_symbolic <- function(id) {
+ui_discretize_symbolic <- function(id) {
     tagList(
         numericInput(
             inputId = NS(id, "alpha"),
@@ -27,7 +27,7 @@ ui_symbolic <- function(id) {
     )
 }
 
-server_symbolic <- function(id) {
+server_discretize_symbolic <- function(id) {
     moduleServer(id, function(input, output, session) {
         class_names <- reactive({
             if (isTruthy(input$classes)) {

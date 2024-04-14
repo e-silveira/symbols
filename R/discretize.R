@@ -18,11 +18,11 @@ ui_discretize_inputs <- function(id) {
                 ),
                 accordion_panel(
                     title = "Symbolic",
-                    ui_symbolic(NS(id, "symbolic")),
+                    ui_discretize_symbolic(NS(id, "symbolic")),
                 ),
                 accordion_panel(
                     title = "Forecasting",
-                    ui_forecasting(NS(id, "forecasting")),
+                    ui_discretize_forecasting(NS(id, "forecasting")),
                 ),
                 header = br(),
             )
@@ -68,8 +68,8 @@ ui_discretize <- function(id) {
 server_discretize <- function(id, data) {
     moduleServer(id, function(input, output, session) {
         opt_input <- server_discretize_data("input", data)
-        opt_symbolic <- server_symbolic("symbolic")
-        opt_forecasting <- server_forecasting("forecasting")
+        opt_symbolic <- server_discretize_symbolic("symbolic")
+        opt_forecasting <- server_discretize_forecasting("forecasting")
 
         df_symbolic <- reactive({
             make_df_from(opt_input()) |>
