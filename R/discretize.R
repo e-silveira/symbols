@@ -7,14 +7,14 @@ library(DT)
 source("lib/forecasting.R")
 source("lib/symbolize.R")
 
-ui_discretize_input <- function(id) {
+ui_discretize_inputs <- function(id) {
     list(
         div(
             accordion(
                 open = FALSE,
                 accordion_panel(
                     title = "Attribute",
-                    ui_input_(NS(id, "input")),
+                    ui_discretize_data(NS(id, "input")),
                 ),
                 accordion_panel(
                     title = "Symbolic",
@@ -34,7 +34,7 @@ ui_discretize_input <- function(id) {
     )
 }
 
-ui_discretize_output <- function(id) {
+ui_discretize_outputs <- function(id) {
     list(
         navset_underline(
             nav_panel(
@@ -59,15 +59,15 @@ ui_discretize <- function(id) {
         sidebar = sidebar(
             width = "30%",
             tab_header("Discretization"),
-            !!!ui_discretize_input(id),
+            !!!ui_discretize_inputs(id),
         ),
-        !!!ui_discretize_output(id),
+        !!!ui_discretize_outputs(id),
     )
 }
 
 server_discretize <- function(id, data) {
     moduleServer(id, function(input, output, session) {
-        opt_input <- server_input_("input", data)
+        opt_input <- server_discretize_data("input", data)
         opt_symbolic <- server_symbolic("symbolic")
         opt_forecasting <- server_forecasting("forecasting")
 
