@@ -4,7 +4,6 @@ library(zeallot)
 library(bslib)
 library(bsicons)
 library(DT)
-source("lib/forecasting.R")
 source("lib/symbolize.R")
 
 ui_discretize_inputs <- function(id) {
@@ -13,16 +12,12 @@ ui_discretize_inputs <- function(id) {
             accordion(
                 open = FALSE,
                 accordion_panel(
-                    title = "Attribute",
+                    title = "Selection",
                     ui_discretize_data(NS(id, "input")),
                 ),
                 accordion_panel(
-                    title = "Symbolic",
+                    title = "Discretization",
                     ui_discretize_symbolic(NS(id, "symbolic")),
-                ),
-                accordion_panel(
-                    title = "Forecasting",
-                    ui_discretize_forecasting(NS(id, "forecasting")),
                 ),
             )
         ),
@@ -67,25 +62,11 @@ server_discretize <- function(id, data) {
     moduleServer(id, function(input, output, session) {
         opt_input <- server_discretize_data("input", data)
         opt_symbolic <- server_discretize_symbolic("symbolic")
-        opt_forecasting <- server_discretize_forecasting("forecasting")
 
         df_symbolic <- reactive({
             make_df_from(opt_input()) |>
                 apply_paa(opt_symbolic()) |>
                 apply_symbolize(opt_symbolic())
-        })
-
-        df_forecasting <- reactive({
-            alphabet <- letters
-            if (!is.null(opt_symbolic()$classes)) {
-                alphabet <- opt_symbolic()$classes
-            }
-
-            apply_forecast(
-                df_symbolic(),
-                opt_forecasting(),
-                alphabet
-            )
         })
 
         output$table <- renderDataTable(
@@ -100,18 +81,9 @@ server_discretize <- function(id, data) {
         ) |> bindEvent(input$apply)
 
         output$plot <- renderPlot({
-            if (opt_forecasting()$apply) {
-                plot_symbolic_forecasting(
-                    df_symbolic(),
-                    df_forecasting()
-                ) +
-                    theme_minimal() +
-                    scale_color_viridis_d(option = "plasma")
-            } else {
-                plot_symbolic(df_symbolic()) +
-                    theme_minimal() +
-                    scale_color_viridis_d(option = "plasma")
-            }
+            plot_symbolic(df_symbolic()) +
+                theme_minimal() +
+                scale_color_viridis_d()
         }) |> bindEvent(input$apply)
     })
 }
@@ -134,40 +106,6 @@ plot_symbolic <- function(df) {
             yintercept = internal_bp(attr(symb, "bp")),
             linetype = "dashed"
         )
-}
-
-plot_symbolic_forecasting <- function(df_symbolic, df_forecasting) {
-    c(time_name, attr_name, symb_name) %<-% colnames(df_symbolic)
-
-    df <- data.frame(
-        as_date(c(df_symbolic[[time_name]], df_forecasting$Time)),
-        c(df_symbolic[[attr_name]], df_forecasting$Prediction),
-        c(df_symbolic[[symb_name]], df_forecasting$Symbols)
-    )
-
-    colnames(df) <- c(time_name, attr_name, symb_name)
-
-    ggplot(df) +
-        geom_ribbon(
-            aes(
-                x = Time,
-                y = Prediction,
-                ymin = Minimum,
-                ymax = Maximum
-            ),
-            data = df_forecasting,
-            color = "gray",
-            alpha = 0.2
-        ) +
-        geom_line(aes(
-            x = .data[[time_name]],
-            y = .data[[attr_name]]
-        )) +
-        geom_point(aes(
-            x = .data[[time_name]],
-            y = .data[[attr_name]],
-            color = .data[[symb_name]]
-        ))
 }
 
 make_df_from <- function(cols) {
@@ -219,40 +157,4 @@ apply_symbolize <- function(df, symb) {
     )
 
     cbind(df, Symbols = symbolized)
-}
-
-apply_forecast <- function(symb, forecasting, alphabet) {
-    if (!forecasting$apply) {
-        return(symb)
-    }
-
-    c(time_name, attr_name, symb_name) %<-% colnames(symb)
-
-    df_forecasting <- NULL
-    if (is.instant(symb[[time_name]])) {
-        df_forecasting <- forecast(
-            data.frame(
-                ds = symb[[time_name]],
-                y = symb[[attr_name]]
-            ),
-            forecasting$periods,
-            forecasting$seasonality,
-            forecasting$mode
-        )
-    } else {
-        df_forecasting <- forecast_vector(
-            symb[[attr_name]],
-            forecasting$periods,
-            forecasting$seasonality,
-            forecasting$mode
-        )
-    }
-
-    symbols <- discretize(
-        df_forecasting$Prediction,
-        attr(symb[["Symbols"]], "bp"),
-        alphabet = alphabet
-    )
-
-    cbind(df_forecasting, Symbols = symbols)
 }

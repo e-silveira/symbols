@@ -6,6 +6,8 @@ library(dplyr)
 library(vroom)
 library(ggplot2)
 
+default_dataframe <- diamonds
+
 ui_input <- function(id) {
     layout_sidebar(
         border = TRUE,
@@ -17,7 +19,7 @@ ui_input <- function(id) {
                 inputId = NS(id, "file"),
                 label = "Select a data file:",
                 accept = ".csv",
-                placeholder = "diamonds.csv"
+                placeholder = "default.csv"
             ),
             navset_hidden(
                 id = NS(id, "dynamic_selection"),
@@ -71,7 +73,7 @@ ui_input <- function(id) {
 
 server_input <- function(id) {
     moduleServer(id, function(input, output, session) {
-        data <- reactiveVal(diamonds)
+        data <- reactiveVal(default_dataframe)
 
         observeEvent(input$file, {
             data(fread(input$file$datapath) |> coerce_data_frame())

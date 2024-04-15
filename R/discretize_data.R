@@ -8,16 +8,6 @@ ui_discretize_data <- function(id) {
             label = "Select the column to discretize:",
             choices = NULL,
         ),
-        selectInput(
-            inputId = NS(id, "time"),
-            label = "Select the time column:",
-            choices = NULL,
-        ),
-        selectInput(
-            inputId = NS(id, "date_format"),
-            label = "Select the date format:",
-            choices = date_formats,
-        )
     )
 }
 

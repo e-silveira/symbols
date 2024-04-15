@@ -21,6 +21,10 @@ ui <- page_fluid(
             ui_discretize("discretize"),
         ),
         nav_panel(
+            title = "Forecast",
+            ui_forecast("forecast"),
+        ),
+        nav_panel(
             title = "Classify",
             ui_classify("classify"),
         ),
@@ -33,9 +37,9 @@ ui <- page_fluid(
 
 server <- function(input, output, session) {
     data <- server_input("input")
-    observe_helpers(help_dir = "help")
     server_discretize("discretize", data)
     server_classify("classify", data)
+    server_forecast("forecast", data)
 }
 
 shinyApp(ui, server)
