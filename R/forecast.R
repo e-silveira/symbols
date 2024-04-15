@@ -1,4 +1,7 @@
 library(prophet)
+library(stringr)
+library(ggplot2)
+library(DT)
 
 ui_forecast_inputs <- function(id) {
     list(
@@ -15,7 +18,7 @@ ui_forecast_inputs <- function(id) {
                     selectInput(
                         inputId = NS(id, "time"),
                         label = "Select the time attribute:",
-                        choices = NULL,
+                        choices = get_date_colnames(default_dataframe),
                     ),
                     selectInput(
                         inputId = NS(id, "date_format"),
@@ -26,21 +29,25 @@ ui_forecast_inputs <- function(id) {
                 accordion_panel(
                     title = "Forecast",
                     tagList(
-                        input_switch(
-                            id = NS(id, "apply"),
-                            label = "Apply forecasting."
-                        ),
                         numericInput(
                             inputId = NS(id, "periods"),
                             label = "Specify the number of time units:",
                             value = 10,
                         ),
-                        selectizeInput(
-                            inputId = NS(id, "seasonality"),
-                            label = "Select the seasonality kind:",
-                            choices = c("Daily", "Weekly", "Yearly"),
-                            multiple = TRUE,
-                            options = list(plugins = "remove_button")
+                        div(
+                            h6("Seasonality:"),
+                            input_switch(
+                                id = NS(id, "daily"),
+                                label = "Daily"
+                            ),
+                            input_switch(
+                                id = NS(id, "weekly"),
+                                label = "Weekly"
+                            ),
+                            input_switch(
+                                id = NS(id, "yearly"),
+                                label = "Yearly"
+                            )
                         ),
                         selectInput(
                             inputId = NS(id, "mode"),
@@ -73,6 +80,12 @@ ui_forecast_outputs <- function(id) {
                     outputId = NS(id, "plot")
                 ),
             ),
+            nav_panel(
+                title = "Decomposition",
+                plotOutput(
+                    outputId = NS(id, "decomposition")
+                )
+            )
         )
     )
 }
@@ -95,6 +108,11 @@ server_forecast <- function(id, data) {
                 inputId = "attribute",
                 choices = get_numeric_colnames(data())
             )
+
+            updateSelectizeInput(
+                inputId = "time",
+                choices = get_date_colnames(data())
+            )
         })
 
         forecasting <- reactive({
@@ -107,11 +125,46 @@ server_forecast <- function(id, data) {
                 y = data()[[input$attribute]]
             )
 
-            m <- prophet(df)
+            m <- prophet(
+                df,
+                daily.seasonality = input$daily,
+                weekly.seasonality = input$weekly,
+                yearly.seasonality = input$yearly,
+                seasonality.mode = str_to_lower(input$mode)
+            )
+
+            future <- make_future_dataframe(m, periods = input$periods)
+
+            list(model = m, prediction = predict(m, future))
         }) |> bindEvent(input$apply)
 
-        output$plot <- renderPlot({
+        output$table <- renderDataTable(
+            {
+                req(forecasting())
+                forecasting()$prediction
+            },
+            options = list(
+                lengthChange = FALSE,
+                paging = TRUE, searching = FALSE,
+                scrollX = TRUE, scrollY = TRUE
+            )
+        ) |> bindEvent(input$apply)
 
+        output$plot <- renderPlot({
+            fc <- forecasting()
+
+            if (!isTruthy(fc)) {
+                validate("You need a time column in order to forecast.")
+            }
+
+            plot(fc$model, fc$prediction) +
+                theme_minimal() +
+                scale_color_viridis_d()
+        }) |> bindEvent(input$apply)
+
+        output$decomposition <- renderPlot({
+            fc <- forecasting()
+            prophet_plot_components(fc$model, fc$prediction)
         }) |> bindEvent(input$apply)
     })
 }

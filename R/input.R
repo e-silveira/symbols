@@ -5,8 +5,9 @@ library(purrr)
 library(dplyr)
 library(vroom)
 library(ggplot2)
+library(nycflights13)
 
-default_dataframe <- diamonds
+default_dataframe <- fread("./data/santa_maria_dengue.csv")
 
 ui_input <- function(id) {
     layout_sidebar(
