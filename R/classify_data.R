@@ -29,7 +29,16 @@ server_classify_data <- function(id, data) {
             updateSelectInput(
                 session,
                 "target",
-                choices = cols()
+                choices = cols(),
+                selected = if (isTruthy(input$target)) input$target else NULL
+            )
+
+            # Update if there is a new discretized column.
+            updateSelectizeInput(
+                session,
+                "features",
+                choices = cols(),
+                selected = input$features
             )
         })
 
