@@ -97,9 +97,10 @@ internal_bp <- function(bp) {
     bp[seq(2, length(bp) - 1)]
 }
 
-tab_header <- function(title) {
+tab_header <- function(title, ...) {
     tagList(
         h5(title, style = "margin: 0"),
+        ...,
         hr(style = "color: #757575; margin-bottom: 0; margin-top: 0"),
     )
 }
