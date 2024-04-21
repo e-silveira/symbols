@@ -83,6 +83,7 @@ server_discretize <- function(id, data) {
             updateSelectInput(
                 session,
                 "attr",
+                selected = input$attr,
                 choices = get_numeric_colnames(data()),
             )
         })
@@ -109,8 +110,13 @@ server_discretize <- function(id, data) {
 
             symb <- exec(symbolize, attr, !!!options())
 
+            # Add symbolic column to the dataset.
+            if (input$compr == 1) {
+                update_data(data, symb, paste0(input$attr, "_symbolic"))
+            }
+
             data.frame(attr, symb) |> set_colnames(c(input$attr, "Symbols"))
-        })
+        }) |> bindEvent(input$apply)
 
         output$table <- renderDataTable(
             {
@@ -137,5 +143,17 @@ server_discretize <- function(id, data) {
                 theme_minimal() +
                 scale_colour_viridis_d()
         }) |> bindEvent(input$apply)
+
+        data
     })
+}
+
+update_data <- function(data, column, colname) {
+    df <- data()
+
+    if (colname %in% colnames(df)) {
+        df <- select(df, -all_of(colname))
+    }
+
+    data(cbind(df, data.frame(column) |> set_colnames(colname)))
 }
