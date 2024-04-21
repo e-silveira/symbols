@@ -62,7 +62,13 @@ ui_discretize <- function(id) {
     layout_sidebar(
         sidebar = sidebar(
             width = "30%",
-            tab_header("Discretization"),
+            tab_header(
+                "Discretization",
+                helpText(paste0(
+                    "Generate columns by discretizing ",
+                    "specified attributes within the dataset."
+                ))
+            ),
             !!!ui_discretize_inputs(id),
         ),
         !!!ui_discretize_outputs(id),
@@ -85,8 +91,8 @@ server_discretize <- function(id, data) {
             if (input$compr != 1) {
                 output$compr_message <- renderUI({
                     helpText(paste0(
-                        "When you apply dimensionality reduction, ",
-                        "the attribute's column will not be overwritten. "
+                        "When you group of observations, ",
+                        "no column will be generated. "
                     ))
                 })
             } else {
