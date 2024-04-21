@@ -15,10 +15,14 @@ ui_discretize_inputs <- function(id) {
                 label = "Select the column to discretize:",
                 choices = NULL,
             ),
+            uiOutput(
+                outputId = NS(id, "compr_message")
+            ),
             numericInput(
                 inputId = NS(id, "compr"),
                 label = "Specify the group size:",
                 value = 1,
+                min = 1
             ),
             accordion(
                 open = FALSE,
@@ -75,6 +79,19 @@ server_discretize <- function(id, data) {
                 "attr",
                 choices = get_numeric_colnames(data()),
             )
+        })
+
+        observeEvent(input$compr, {
+            if (input$compr != 1) {
+                output$compr_message <- renderUI({
+                    helpText(paste0(
+                        "When you apply dimensionality reduction, ",
+                        "the attribute's column will not be overwritten. "
+                    ))
+                })
+            } else {
+                output$compr_message <- NULL
+            }
         })
 
         symbolic <- reactive({
