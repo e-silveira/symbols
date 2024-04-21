@@ -103,3 +103,8 @@ tab_header <- function(title) {
         hr(style = "color: #757575; margin-bottom: 0; margin-top: 0"),
     )
 }
+
+set_colnames <- function(df, colnames_) {
+    colnames(df) <- colnames_
+    df
+}

@@ -19,12 +19,6 @@ server_discretize_data <- function(id, data) {
                 "attr",
                 choices = get_numeric_colnames(data()),
             )
-
-            updateSelectInput(
-                session,
-                "time",
-                choices = get_date_colnames(data()),
-            )
         })
 
         reactive({
@@ -32,31 +26,10 @@ server_discretize_data <- function(id, data) {
 
             attr <- data()[[input$attr]] |> as.numeric()
 
-            time <- NULL
-            if (isTruthy(input$time)) {
-                time <- time_column_or_stop(
-                    data()[[input$time]],
-                    input$date_format
-                )
-            }
-
             list(
-                time,
-                input$time,
                 attr,
                 input$attr
             )
         })
     })
-}
-
-time_column_or_stop <- function(column, date_format) {
-    tryCatch(
-        {
-            parse_date_time(column, date_format)
-        },
-        condition = function(cond) {
-            validate("Date format introduced invalid values.")
-        }
-    )
 }

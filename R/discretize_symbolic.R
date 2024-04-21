@@ -6,18 +6,13 @@ library(magrittr)
 ui_discretize_symbolic <- function(id) {
     tagList(
         numericInput(
-            inputId = NS(id, "alpha"),
+            inputId = NS(id, "n"),
             label = "Select the number of classes:",
             value = 4,
         ),
         textInput(
-            inputId = NS(id, "classes"),
+            inputId = NS(id, "alphabet"),
             label = "Specify the class names:"
-        ),
-        numericInput(
-            inputId = NS(id, "compr"),
-            label = "Specify the group size:",
-            value = 1,
         ),
         selectInput(
             inputId = NS(id, "method"),
@@ -29,9 +24,9 @@ ui_discretize_symbolic <- function(id) {
 
 server_discretize_symbolic <- function(id) {
     moduleServer(id, function(input, output, session) {
-        class_names <- reactive({
-            if (isTruthy(input$classes)) {
-                str_split_1(input$classes, ",") |>
+        alphabet <- reactive({
+            if (isTruthy(input$alphabet)) {
+                str_split_1(input$alphabet, ",") |>
                     reduce(function(acc, x) if (x == "") acc else c(acc, x)) |>
                     map_chr(str_trim)
             } else {
@@ -39,22 +34,38 @@ server_discretize_symbolic <- function(id) {
             }
         })
 
-        observeEvent(class_names(), {
-            if (length(class_names()) > 0) {
+        observeEvent(alphabet(), {
+            if (length(alphabet()) > 0) {
                 updateNumericInput(
-                    inputId = "alpha",
-                    value = length(class_names())
+                    inputId = "n",
+                    value = length(alphabet())
+                )
+            }
+        })
+
+        observeEvent(input$n, {
+            if (isTruthy(input$alphabet)) {
+                updateNumericInput(
+                    inputId = "n",
+                    value = length(alphabet())
                 )
             }
         })
 
         reactive({
             list(
-                alpha = input$alpha,
-                compr = input$compr,
-                method = str_to_lower(input$method),
-                classes = class_names()
+                n = input$n,
+                alphabet = get_alphabet(input$n, alphabet()),
+                method = str_to_lower(input$method)
             )
         })
     })
+}
+
+get_alphabet <- function(n, alphabet) {
+    if (is.null(alphabet)) {
+        letters[1:n]
+    } else {
+        alphabet
+    }
 }

@@ -4,17 +4,24 @@ library(zeallot)
 library(bslib)
 library(bsicons)
 library(DT)
+library(rlang)
 source("lib/symbolize.R")
 
 ui_discretize_inputs <- function(id) {
     list(
         div(
+            selectInput(
+                inputId = NS(id, "attr"),
+                label = "Select the column to discretize:",
+                choices = NULL,
+            ),
+            numericInput(
+                inputId = NS(id, "compr"),
+                label = "Specify the group size:",
+                value = 1,
+            ),
             accordion(
                 open = FALSE,
-                accordion_panel(
-                    title = "Selection",
-                    ui_discretize_data(NS(id, "input")),
-                ),
                 accordion_panel(
                     title = "Discretization",
                     ui_discretize_symbolic(NS(id, "symbolic")),
@@ -60,18 +67,31 @@ ui_discretize <- function(id) {
 
 server_discretize <- function(id, data) {
     moduleServer(id, function(input, output, session) {
-        opt_input <- server_discretize_data("input", data)
-        opt_symbolic <- server_discretize_symbolic("symbolic")
+        options <- server_discretize_symbolic("symbolic")
 
-        df_symbolic <- reactive({
-            make_df_from(opt_input()) |>
-                apply_paa(opt_symbolic()) |>
-                apply_symbolize(opt_symbolic())
+        observeEvent(data(), {
+            updateSelectInput(
+                session,
+                "attr",
+                choices = get_numeric_colnames(data()),
+            )
+        })
+
+        symbolic <- reactive({
+            attr <- data()[[input$attr]]
+
+            if (isTruthy(input$compr)) {
+                attr <- paa(attr, input$compr)
+            }
+
+            symb <- exec(symbolize, attr, !!!options())
+
+            data.frame(attr, symb) |> set_colnames(c(input$attr, "Symbols"))
         })
 
         output$table <- renderDataTable(
             {
-                df_symbolic()
+                symbolic()
             },
             options = list(
                 lengthChange = FALSE,
@@ -81,80 +101,18 @@ server_discretize <- function(id, data) {
         ) |> bindEvent(input$apply)
 
         output$plot <- renderPlot({
-            plot_symbolic(df_symbolic()) +
+            ggplot(
+                symbolic(),
+                aes(
+                    x = seq_along(.data[[input$attr]]),
+                    y = .data[[input$attr]]
+                )
+            ) +
+                geom_line() +
+                geom_point(aes(colour = Symbols), size = 2) +
+                labs(x = "Index") +
                 theme_minimal() +
-                scale_color_viridis_d()
+                scale_colour_viridis_d()
         }) |> bindEvent(input$apply)
     })
-}
-
-plot_symbolic <- function(df) {
-    c(time_name, attr_name, symb_name) %<-% colnames(df)
-    symb <- df[[symb_name]]
-
-    ggplot(df) +
-        geom_line(aes(
-            x = .data[[time_name]],
-            y = .data[[attr_name]],
-        )) +
-        geom_point(aes(
-            x = .data[[time_name]],
-            y = .data[[attr_name]],
-            color = .data[[symb_name]]
-        )) +
-        geom_hline(
-            yintercept = internal_bp(attr(symb, "bp")),
-            linetype = "dashed"
-        )
-}
-
-make_df_from <- function(cols) {
-    c(time, time_name, attr, attr_name) %<-% cols
-
-    df <- NULL
-    if (is.null(time)) {
-        df <- data.frame(seq_along(attr), attr)
-        colnames(df) <- c("Index", attr_name)
-    } else {
-        df <- data.frame(time, attr)
-        colnames(df) <- c(time_name, attr_name)
-    }
-
-    df
-}
-
-apply_paa <- function(df, symb) {
-    c(time_name, attr_name) %<-% colnames(df)
-
-    paaed_attr <- paa(df[[attr_name]], symb$compr)
-
-    paaed_time <- NULL
-    if (is.instant(df[[time_name]])) {
-        paaed_time <- paa_date(df[[time_name]], symb$compr)
-    } else {
-        paaed_time <- seq_along(paaed_attr)
-    }
-
-    paaed <- data.frame(paaed_time, paaed_attr)
-    colnames(paaed) <- c(time_name, attr_name)
-
-    paaed
-}
-
-apply_symbolize <- function(df, symb) {
-    c(time_name, attr_name) %<-% colnames(df)
-
-    alphabet <- letters
-    if (!is.null(symb$classes)) {
-        alphabet <- symb$classes
-    }
-
-    symbolized <- symbolize(
-        df[[attr_name]],
-        symb$alpha,
-        alphabet = alphabet,
-        method = symb$method
-    )
-
-    cbind(df, Symbols = symbolized)
 }
