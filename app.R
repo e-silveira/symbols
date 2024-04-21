@@ -37,7 +37,7 @@ ui <- page_fluid(
 
 server <- function(input, output, session) {
     data <- server_input("input")
-    server_discretize("discretize", data)
+    data <- server_discretize("discretize", data)
     server_classify("classify", data)
     server_forecast("forecast", data)
 }
