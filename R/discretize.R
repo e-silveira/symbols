@@ -70,6 +70,10 @@ ui_discretize_outputs <- function(id) {
                 plotOutput(
                     outputId = NS(id, "plot")
                 ),
+            ),
+            nav_panel(
+                title = "Downloads",
+                ui_download(NS(id, "download"))
             )
         )
     )
@@ -94,6 +98,8 @@ ui_discretize <- function(id) {
 
 server_discretize <- function(id, data) {
     moduleServer(id, function(input, output, session) {
+        server_download("download", "discretized", discretized_plot)
+
         options <- server_discretize_symbolic("symbolic")
 
         observeEvent(data(), {
@@ -188,7 +194,7 @@ server_discretize <- function(id, data) {
             )
         ) |> bindEvent(input$apply)
 
-        output$plot <- renderPlot({
+        discretized_plot <- reactive({
             symb <- symbolic()[["Symbols"]]
 
             bp <- attr(symb, "bp")
@@ -206,6 +212,10 @@ server_discretize <- function(id, data) {
                 labs(x = "Index") +
                 theme_minimal() +
                 scale_y_continuous(breaks = round(internal_bp(bp), 2))
+        }) |> bindEvent(input$apply)
+
+        output$plot <- renderPlot({
+            discretized_plot()
         }) |> bindEvent(input$apply)
     })
 }

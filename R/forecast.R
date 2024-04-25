@@ -90,6 +90,10 @@ ui_forecast_outputs <- function(id) {
                 plotOutput(
                     outputId = NS(id, "decomposition")
                 )
+            ),
+            nav_panel(
+                title = "Downloads",
+                ui_download(NS(id, "download"))
             )
         )
     )
@@ -108,6 +112,8 @@ ui_forecast <- function(id) {
 
 server_forecast <- function(id, data) {
     moduleServer(id, function(input, output, session) {
+        server_download("download", "forecasting_plot", forecasting_plot)
+
         observeEvent(data(), {
             updateSelectizeInput(
                 inputId = "attribute",
@@ -161,7 +167,7 @@ server_forecast <- function(id, data) {
             )
         ) |> bindEvent(input$apply)
 
-        output$plot <- renderPlot({
+        forecasting_plot <- reactive({
             fc <- forecasting()
 
             if (!isTruthy(fc)) {
@@ -213,6 +219,10 @@ server_forecast <- function(id, data) {
                     y = input$time,
                     color = "Class"
                 )
+        }) |> bindEvent(input$apply)
+
+        output$plot <- renderPlot({
+            forecasting_plot()
         }) |> bindEvent(input$apply)
 
         output$decomposition <- renderPlot({
