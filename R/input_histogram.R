@@ -56,9 +56,7 @@ server_input_histogram <- function(id, data) {
                 p <- p + facet_wrap(vars(.data[[input$grouping]]))
             }
 
-            p +
-                theme_minimal() +
-                scale_color_viridis_d()
+            p + theme_minimal()
         })
     })
 }

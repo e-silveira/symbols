@@ -1,5 +1,6 @@
 library(dplyr)
 library(lubridate)
+library(shiny)
 
 date_formats <- list(
     "ymd",
@@ -108,4 +109,8 @@ tab_header <- function(title, ...) {
 set_colnames <- function(df, colnames_) {
     colnames(df) <- colnames_
     df
+}
+
+is_truthy <- function(x) {
+    if (isTruthy(x)) x else NULL
 }

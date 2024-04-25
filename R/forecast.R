@@ -1,6 +1,7 @@
 library(prophet)
 library(stringr)
 library(ggplot2)
+library(bslib)
 library(DT)
 
 ui_forecast_inputs <- function(id) {
@@ -24,6 +25,10 @@ ui_forecast_inputs <- function(id) {
                         inputId = NS(id, "date_format"),
                         label = "Select the date format:",
                         choices = date_formats,
+                    ),
+                    input_switch(
+                        id = NS(id, "symbolic"),
+                        label = "Show symbolic classes."
                     )
                 ),
                 accordion_panel(
@@ -106,12 +111,18 @@ server_forecast <- function(id, data) {
         observeEvent(data(), {
             updateSelectizeInput(
                 inputId = "attribute",
-                choices = get_numeric_colnames(data())
+                choices = get_numeric_colnames(data()),
+                selected = if (isTruthy(input$attribute)) {
+                    input$attribute
+                } else {
+                    NULL
+                }
             )
 
             updateSelectizeInput(
                 inputId = "time",
-                choices = get_date_colnames(data())
+                choices = get_date_colnames(data()),
+                selected = if (isTruthy(input$time)) input$time else NULL
             )
         })
 
@@ -157,9 +168,51 @@ server_forecast <- function(id, data) {
                 validate("You need a time column in order to forecast.")
             }
 
-            plot(fc$model, fc$prediction) +
-                theme_minimal() +
-                scale_color_viridis_d()
+            p <- plot(fc$model, fc$prediction)
+
+            if (input$symbolic) {
+                symbolic_attr_name <- paste0(input$attribute, "_symbolic")
+                if (symbolic_attr_name %in% colnames(data())) {
+                    symbolic_attr <- data()[[symbolic_attr_name]]
+
+                    bp <- attr(symbolic_attr, "bp")
+                    alphabet <- attr(symbolic_attr, "alphabet")
+
+                    attr <- fc$model$history$y
+                    fore <- fc$prediction$yhat[seq(
+                        length(attr) + 1,
+                        nrow(fc$prediction)
+                    )]
+
+                    discretized <- discretize(c(attr, fore), bp, alphabet)
+
+                    p <- p + geom_point(
+                        aes(
+                            x = .data[["ds"]],
+                            y = .data[["y"]],
+                            color = discretized
+                        )
+                    ) +
+                        geom_hline(
+                            yintercept = internal_bp(bp),
+                            linetype = "dashed"
+                        ) +
+                        scale_color_discrete(breaks = alphabet) +
+                        scale_y_continuous(breaks = round(internal_bp(bp), 2))
+                } else {
+                    validate(paste(
+                        "Your attribute has no corresponding discretization.",
+                        "You have to discretize it in the `Discretize` tab."
+                    ))
+                }
+            }
+
+            p + theme_minimal() +
+                labs(
+                    x = input$attribute,
+                    y = input$time,
+                    color = "Class"
+                )
         }) |> bindEvent(input$apply)
 
         output$decomposition <- renderPlot({
@@ -167,15 +220,4 @@ server_forecast <- function(id, data) {
             prophet_plot_components(fc$model, fc$prediction)
         }) |> bindEvent(input$apply)
     })
-}
-
-time_column_or_stop <- function(column, date_format) {
-    tryCatch(
-        {
-            parse_date_time(column, date_format)
-        },
-        condition = function(cond) {
-            validate("Date format introduced invalid values.")
-        }
-    )
 }

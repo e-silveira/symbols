@@ -43,6 +43,35 @@ discretize <- function(x, bp, alphabet = letters) {
     y
 }
 
+interval_selection <- function(bp, a, b) {
+    bp_ <- c()
+
+    i <- 1
+
+    while (i <= length(bp)) {
+        if (bp[i] >= a) {
+            break
+        }
+
+        bp_ <- c(bp_, bp[i])
+
+        i <- i + 1
+    }
+
+    bp_ <- c(bp_, a)
+    bp_ <- c(bp_, b)
+
+    while (i <= length(bp)) {
+        if (bp[i] > b) {
+            bp_ <- c(bp_, bp[i])
+        }
+
+        i <- i + 1
+    }
+
+    bp_
+}
+
 breakpoints_sax <- function(x, n) {
     qnorm(
         seq(0, 1, 1 / n),
@@ -74,11 +103,12 @@ breakpoints_dwsax <- function(x, n) {
     c(-Inf, bp, Inf)
 }
 
-as_symbolic <- function(symbols, bp, values) {
+as_symbolic <- function(symbols, bp, values, alphabet) {
     structure(
         symbols,
         bp = bp,
         values = values,
+        alphabet = alphabet,
         class = c("symbolic", "character")
     )
 }
@@ -88,12 +118,15 @@ c.symbolic <- function(x, y) {
     as_symbolic(
         c(as.character(x), as.character(y)),
         attr(x, "bp"),
-        c(attr(x, "values"), attr(y, "values"))
+        c(attr(x, "values"), attr(y, "values")),
+        attr(x, "alphabet")
     )
 }
 
 symbolize <- function(x, n, alphabet = letters, method = "qsax") {
     bp <- NA
+
+    alphabet <- alphabet[1:n]
 
     if (method == "sax") {
         bp <- breakpoints_sax(x, n)
@@ -105,7 +138,34 @@ symbolize <- function(x, n, alphabet = letters, method = "qsax") {
 
     symbols <- discretize(x, bp, alphabet)
 
-    as_symbolic(symbols, bp, x)
+    as_symbolic(symbols, bp, x, alphabet)
+}
+
+symbolize_i <- function(x, a, b, n, alphabet = letters, method = "qsax") {
+    bp <- NA
+
+    alphabet <- alphabet[1:n]
+
+    if (method == "sax") {
+        bp <- breakpoints_sax(x, n)
+    } else if (method == "qsax") {
+        bp <- breakpoints_qsax(x, n)
+    } else {
+        bp <- breakpoints_dwsax(x, n)
+    }
+
+    bp <- interval_selection(bp, a, b)
+
+    if (length(bp) - 1 != n) {
+        n <- length(bp) - 1
+        alphabet <- letters[1:n]
+    } else {
+        alphabet <- alphabet[1:n]
+    }
+
+    symbols <- discretize(x, bp, alphabet)
+
+    as_symbolic(symbols, bp, x, alphabet)
 }
 
 ggsymbolic <- function(sym, time) {

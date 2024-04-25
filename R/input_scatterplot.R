@@ -58,10 +58,7 @@ server_input_scatterplot <- function(id, data) {
                 p <- p + aes(colour = .data[[input$grouping]])
             }
 
-            p +
-                geom_point() +
-                theme_minimal() +
-                scale_colour_viridis_d()
+            p + geom_point() + theme_minimal()
         })
     })
 }

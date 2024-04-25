@@ -29,8 +29,25 @@ ui_discretize_inputs <- function(id) {
                 accordion_panel(
                     title = "Discretization",
                     ui_discretize_symbolic(NS(id, "symbolic")),
+                    input_switch(
+                        id = NS(id, "interval"),
+                        label = "Interval selection."
+                    ),
+                    uiOutput(
+                        outputId = NS(id, "when_interval")
+                    ),
+                    numericInput(
+                        inputId = NS(id, "lower"),
+                        label = "Specify the lower endpoint:",
+                        value = NULL
+                    ),
+                    numericInput(
+                        inputId = NS(id, "upper"),
+                        label = "Specify the upper endpoint:",
+                        value = NULL
+                    )
                 ),
-            )
+            ),
         ),
         actionButton(
             inputId = NS(id, "apply"),
@@ -83,8 +100,27 @@ server_discretize <- function(id, data) {
             updateSelectInput(
                 session,
                 "attr",
-                selected = input$attr,
+                selected = if (isTruthy(input$attr)) input$attr else NULL,
                 choices = get_numeric_colnames(data()),
+            )
+        })
+
+        observeEvent(input$interval, {
+            if (!input$interval) {
+                output$when_interval <- NULL
+                return()
+            }
+
+            output$when_interval <- renderUI(
+                helpText(
+                    paste(
+                        "When you specify an interval,",
+                        "the dwSAX and qSAX can no longer guarantee",
+                        "the equal distribution of classes.",
+                        "The interval can also change the number of classes.",
+                        "In that case, letters will be used as the alphabet."
+                    )
+                )
             )
         })
 
@@ -108,8 +144,19 @@ server_discretize <- function(id, data) {
                 attr <- paa(attr, input$compr)
             }
 
-            symb <- exec(symbolize, attr, !!!options())
-
+            if (input$interval) {
+                if (!isTruthy(input$lower) || !isTruthy(input$upper)) {
+                    validate(
+                        "You have to specify the endpoints of the interval."
+                    )
+                }
+                symb <- exec(
+                    symbolize_i, attr,
+                    input$lower, input$upper, !!!options()
+                )
+            } else {
+                symb <- exec(symbolize, attr, !!!options())
+            }
 
             data.frame(attr, symb) |> set_colnames(c(input$attr, "Symbols"))
         }) |> bindEvent(input$apply)
@@ -142,6 +189,10 @@ server_discretize <- function(id, data) {
         ) |> bindEvent(input$apply)
 
         output$plot <- renderPlot({
+            symb <- symbolic()[["Symbols"]]
+
+            bp <- attr(symb, "bp")
+
             ggplot(
                 symbolic(),
                 aes(
@@ -151,9 +202,10 @@ server_discretize <- function(id, data) {
             ) +
                 geom_line() +
                 geom_point(aes(colour = Symbols), size = 2) +
+                geom_hline(yintercept = internal_bp(bp), linetype = "dashed") +
                 labs(x = "Index") +
                 theme_minimal() +
-                scale_colour_viridis_d()
+                scale_y_continuous(breaks = round(internal_bp(bp), 2))
         }) |> bindEvent(input$apply)
     })
 }
