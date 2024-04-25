@@ -1,6 +1,6 @@
 library(shiny)
 
-forecasting_options_ui <- function(id) {
+ui_forecasting <- function(id) {
     tagList(
         checkboxInput(
             inputId = NS(id, "apply"),
@@ -25,13 +25,13 @@ forecasting_options_ui <- function(id) {
     )
 }
 
-forecasting_options_server <- function(id) {
+server_forecasting <- function(id) {
     moduleServer(id, function(input, output, session) {
         reactive({
             list(
                 apply = input$apply,
                 periods = input$periods,
-                kind = input$seasonality,
+                seasonality = input$seasonality,
                 mode = input$mode
             )
         })

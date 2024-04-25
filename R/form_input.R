@@ -1,6 +1,7 @@
 library(shiny)
+library(lubridate)
 
-user_input_ui <- function(id) {
+ui_input <- function(id) {
     tagList(
         fileInput(
             inputId = NS(id, "file"),
@@ -10,22 +11,27 @@ user_input_ui <- function(id) {
         ),
         selectInput(
             inputId = NS(id, "attr"),
-            label = "Select an attribute.",
+            label = "What column to discretize?",
             choices = NULL,
             selectize = FALSE,
         ),
         selectInput(
             inputId = NS(id, "time"),
-            label = "Select the time column.",
+            label = "What time column?",
             choices = NULL,
             selectize = FALSE,
         ),
+        selectInput(
+            inputId = NS(id, "date_format"),
+            label = "What date format?",
+            choices = date_formats,
+            selectize = FALSE,
+        )
     )
 }
 
-user_input_server <- function(id) {
+server_input <- function(id) {
     moduleServer(id, function(input, output, session) {
-
         current_data <- reactiveVal(read.csv("./data/dengue.csv"))
 
         data <- reactive({
@@ -56,10 +62,29 @@ user_input_server <- function(id) {
 
             time <- NULL
             if (isTruthy(input$time)) {
-                time <- data()[[input$time]] |> as.Date()
+                time <- time_column_or_stop(
+                    data()[[input$time]],
+                    input$date_format
+                )
             }
 
-            list(time, input$time, attr, input$attr)
+            list(
+                time,
+                input$time,
+                attr,
+                input$attr
+            )
         })
     })
+}
+
+time_column_or_stop <- function(column, date_format) {
+    tryCatch(
+        {
+            parse_date_time(column, date_format)
+        },
+        condition = function(cond) {
+            validate("Date format introduced invalid values.")
+        }
+    )
 }
