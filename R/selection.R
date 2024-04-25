@@ -35,7 +35,7 @@ selection_server <- function(id, data) {
         reactive({
             req(input$attribute)
 
-            if (isTruthy(input$time)) {
+            if (isTruthy(input$time) && input$time %in% colnames(data())) {
                 list(
                     Time = as.Date(data()[[input$time]]),
                     Attribute = as.numeric(data()[[input$attribute]])
