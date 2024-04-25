@@ -2,16 +2,36 @@ library(prophet)
 library(magrittr)
 library(ggplot2)
 library(dplyr)
+library(lubridate)
+library(stringr)
 source("R/symbolize.R")
 
 # Retorna um data.frame com os atributos Time, Prediction, Minimum e Maximum.
-forecast <- function(df, periods) {
-    model <- prophet(df)
+forecast <- function(df, periods, seasonality, mode) {
+    model <- prophet(
+        df,
+        daily.seasonality = "Daily" %in% seasonality,
+        weekly.seasonality = "Weekly" %in% seasonality,
+        yearly.seasonality = "Yearly" %in% seasonality,
+        seasonality.mode = str_to_lower(mode)
+    )
+
+    diff <- abs(as.numeric(df[["ds"]][2] - df[["ds"]][1]))
+
+    freq <- "day"
+    if (diff == 7) {
+        freq <- "week"
+    } else if (abs(diff - 30) < 4) {
+        freq <- "month"
+    } else if (abs(diff - 365) < 2) {
+        freq <- "year"
+    }
 
     future <- make_future_dataframe(
         model,
         periods = periods,
-        include_history = FALSE
+        include_history = FALSE,
+        freq = freq
     )
 
     predict(model, future) |>
@@ -24,7 +44,7 @@ forecast <- function(df, periods) {
         mutate(Time = as.Date(Time))
 }
 
-forecast_vector <- function(x, periods) {
+forecast_vector <- function(x, periods, seasonality, mode) {
     data.frame(
         ds = seq.Date(
             as.Date("1000-01-01"),
@@ -33,7 +53,7 @@ forecast_vector <- function(x, periods) {
         ),
         y = x
     ) %>%
-        forecast(periods) %>%
+        forecast(periods, seasonality, mode) %>%
         mutate(
             Time = seq(
                 length(x) + 1,
